@@ -1,0 +1,21 @@
+[package]
+name = "ffxiv-version-types"
+version = "0.0.0"
+edition = "2024"
+
+[lints]
+workspace = true
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+chrono = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+url = { workspace = true, features = ["serde"] }
+
+[dev-dependencies]
+anyhow = { workspace = true }
+csv = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+
