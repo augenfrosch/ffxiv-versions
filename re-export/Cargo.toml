@@ -1,0 +1,14 @@
+[package]
+name = "ffxiv-version-re-export"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+ffxiv-version-types = { workspace = true }
+
+anyhow = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+csv = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+tokio = { workspace = true, features = ["full"] }

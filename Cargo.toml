@@ -1,5 +1,6 @@
 [workspace]
 members = [
+    "re-export",
 	"types",
 ]
 resolver = "3"
@@ -9,9 +10,11 @@ ffxiv-version-types = { path = "./types" }
 
 anyhow = { version = "1.0" }
 chrono = { version = "0.4" }
+clap = { version = "4.5" }
 csv = { version = "1.4" }
 serde = { version = "1.0" }
 serde_json = { version = "1.0" }
+tokio = { version = "1.49" }
 url = { version = "2.5" }
 
 

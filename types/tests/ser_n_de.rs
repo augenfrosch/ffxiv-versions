@@ -1,4 +1,4 @@
-use anyhow::Result;
+use anyhow::{Context, Result};
 use chrono::NaiveDate;
 use ffxiv_version_types::{GameVersion, Version};
 use serde::Serialize;
@@ -19,12 +19,12 @@ fn test_version() -> Result<Version> {
 	// 2026.01.30.0000.0000,7.41x1,2026-02-05,,https://na.finalfantasyxiv.com/lodestone/news/detail/e1cabf2fe5698223626bd53e6b6057a7612cf8fe
 	Ok(Version {
 		game_version: GameVersion {
-			date: NaiveDate::from_ymd_opt(2026, 1, 30).unwrap(),
+			date: NaiveDate::from_ymd_opt(2026, 1, 30).context("Invalid date")?,
 			part: 0,
 			revision: 0,
 		},
 		version_name: "7.41x1".to_owned(),
-		release_date: NaiveDate::from_ymd_opt(2026, 2, 5).unwrap(),
+		release_date: NaiveDate::from_ymd_opt(2026, 2, 5).context("Invalid date")?,
 		patch_note_url: None,
 		update_notice_url: Some(Url::parse(
 			"https://na.finalfantasyxiv.com/lodestone/news/detail/e1cabf2fe5698223626bd53e6b6057a7612cf8fe",

@@ -1,0 +1,107 @@
+[
+	{
+		"game_version": "2024.09.17.0000.0000",
+		"version_name": "7.0",
+		"release_date": "2024-09-26",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/365381",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/365344"
+	},
+	{
+		"game_version": "2024.10.10.0000.0000",
+		"version_name": "7.01",
+		"release_date": "2024-10-22",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/366229",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/366293"
+	},
+	{
+		"game_version": "2024.11.01.0000.0000",
+		"version_name": "7.05",
+		"release_date": "2024-11-12",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/367014",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/367072"
+	},
+	{
+		"game_version": "2025.02.13.0000.0000",
+		"version_name": "7.1",
+		"release_date": "2025-02-18",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/371127",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/371173"
+	},
+	{
+		"game_version": "2025.03.03.0000.0000",
+		"version_name": "7.11",
+		"release_date": "2025-03-11",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/371841",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/372098"
+	},
+	{
+		"game_version": "2025.04.12.0000.0000",
+		"version_name": "7.15",
+		"release_date": "2025-04-22",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/373517",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/373545"
+	},
+	{
+		"game_version": "2025.06.13.0000.0000",
+		"version_name": "7.2",
+		"release_date": "2025-06-24",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/375723",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/375733"
+	},
+	{
+		"game_version": "2025.07.28.0000.0000",
+		"version_name": "7.25",
+		"release_date": "2025-08-12",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/377534",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/377696"
+	},
+	{
+		"game_version": "2025.09.03.0000.0000",
+		"version_name": "7.3",
+		"release_date": "2025-09-16",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/379016",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/379070"
+	},
+	{
+		"game_version": "2025.10.23.0000.0000",
+		"version_name": "7.35",
+		"release_date": "2025-11-04",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/380616",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/380721"
+	},
+	{
+		"game_version": "2025.12.09.0000.0000",
+		"version_name": "7.4",
+		"release_date": "2025-12-16",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/382068",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/382290"
+	},
+	{
+		"game_version": "2025.12.18.0000.0000",
+		"version_name": "7.4x1",
+		"release_date": "2025-12-19",
+		"patch_note_url": null,
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/382574"
+	},
+	{
+		"game_version": "2025.12.23.0000.0000",
+		"version_name": "7.4x2",
+		"release_date": "2025-12-25",
+		"patch_note_url": null,
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/382821"
+	},
+	{
+		"game_version": "2026.01.21.0000.0000",
+		"version_name": "7.41",
+		"release_date": "2026-01-27",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/383894",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/384122"
+	},
+	{
+		"game_version": "2026.01.30.0000.0000",
+		"version_name": "7.41x1",
+		"release_date": "2026-02-05",
+		"patch_note_url": null,
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/384526"
+	}
+]

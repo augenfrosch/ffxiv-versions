@@ -1,0 +1,100 @@
+[
+	{
+		"game_version": "2024.11.19.0000.0000",
+		"version_name": "7.0",
+		"release_date": "2024-12-03",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2603",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2606"
+	},
+	{
+		"game_version": "2024.12.18.0000.0000",
+		"version_name": "7.01",
+		"release_date": "2024-12-24",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2619",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2624"
+	},
+	{
+		"game_version": "2025.01.08.0000.0000",
+		"version_name": "7.05",
+		"release_date": "2025-01-14",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2630",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2636"
+	},
+	{
+		"game_version": "2025.03.07.0000.0000",
+		"version_name": "7.1",
+		"release_date": "2025-03-18",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2661",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2667"
+	},
+	{
+		"game_version": "2025.04.09.0000.0000",
+		"version_name": "7.11",
+		"release_date": "2025-04-15",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2671",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2676"
+	},
+	{
+		"game_version": "2025.05.14.0000.0000",
+		"version_name": "7.15",
+		"release_date": "2025-05-27",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2693",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2699"
+	},
+	{
+		"game_version": "2025.07.04.0000.0000",
+		"version_name": "7.2",
+		"release_date": "2025-07-15",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2715",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2720"
+	},
+	{
+		"game_version": "2025.08.01.0000.0000",
+		"version_name": "7.21",
+		"release_date": "2025-08-12",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2733",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2736"
+	},
+	{
+		"game_version": "2025.09.02.0000.0000",
+		"version_name": "7.25",
+		"release_date": "2025-09-09",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2757",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2760"
+	},
+	{
+		"game_version": "2025.09.26.0000.0000",
+		"version_name": "7.3",
+		"release_date": "2025-10-28",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2774",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2777"
+	},
+	{
+		"game_version": "2025.11.11.0000.0000",
+		"version_name": "7.31",
+		"release_date": "2025-11-25",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2785",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2788"
+	},
+	{
+		"game_version": "2025.12.12.0000.0000",
+		"version_name": "7.35",
+		"release_date": "2025-12-23",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2803",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2807"
+	},
+	{
+		"game_version": "2026.01.28.0000.0000",
+		"version_name": "7.4",
+		"release_date": "2026-02-03",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2824",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2828"
+	},
+	{
+		"game_version": "2026.02.06.0000.0000",
+		"version_name": "7.4x1",
+		"release_date": "2026-02-10",
+		"patch_note_url": null,
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2831"
+	}
+]

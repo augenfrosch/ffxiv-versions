@@ -1,0 +1,226 @@
+[
+	{
+		"game_version": "2024.06.18.0000.0000",
+		"version_name": "7.0",
+		"release_date": "2024-06-26",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/d7db61f938f9cea65e4c5cd261918edb036b3004",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/bca3ccbb086283b56638fc832c9ae80c754622c3"
+	},
+	{
+		"game_version": "2024.07.06.0000.0000",
+		"version_name": "7.0x1",
+		"release_date": "2024-07-06",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/f6cdae7e7a04944478ae628ee52511a0eb3f3a90"
+	},
+	{
+		"game_version": "2024.07.10.0001.0000",
+		"version_name": "7.01",
+		"release_date": "2024-07-16",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/0ad1ca4bbafeb2ee244994bee15b3a74c0278e1d",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/81500fac8db3f56f11d66e2e09ec1cb79510f25d"
+	},
+	{
+		"game_version": "2024.07.24.0000.0000",
+		"version_name": "7.05",
+		"release_date": "2024-07-30",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/3a247a30e096e56b701157cd9fb903299a244c2f",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/3a4742e7f7528bced09bf70180c93bbbf48dadfd"
+	},
+	{
+		"game_version": "2024.08.02.0000.0000",
+		"version_name": "7.05x1",
+		"release_date": "2024-08-08",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/f60dc2fb5b35be3288386c0a229d8231b9ead611"
+	},
+	{
+		"game_version": "2024.08.21.0000.0000",
+		"version_name": "7.05x2",
+		"release_date": "2024-08-27",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/6769627ae84a513ea6075419de181d3dfefef9ff"
+	},
+	{
+		"game_version": "2024.11.06.0000.0000",
+		"version_name": "7.1",
+		"release_date": "2024-11-12",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/9b42b2425f3a680caea3281ccd65c99677cb00e2",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/23aaae6852018808ffa50865b9f3a77654f6a335"
+	},
+	{
+		"game_version": "2024.11.20.0000.0000",
+		"version_name": "7.11",
+		"release_date": "2024-11-26",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/f8506f4808c8db5d061b31eb511dc946902712f4",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/562ddcff3f349c42ed1815bfd6e4b0dd20d1fa74"
+	},
+	{
+		"game_version": "2024.12.07.0000.0000",
+		"version_name": "7.15",
+		"release_date": "2024-12-17",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/864c7e51128b7a1dced4e193dcaefe7891620f8d",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/82308fe0c30a26264f8cadd082fca340d0f3a8b5"
+	},
+	{
+		"game_version": "2025.01.14.0000.0000",
+		"version_name": "7.16",
+		"release_date": "2025-01-21",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/5cf11b096edd33c679bd29894d7e1972ed22c350",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/63b4f3ada3f6ed4c3345b1350b8fc1e177f6fa7b"
+	},
+	{
+		"game_version": "2025.01.28.0000.0000",
+		"version_name": "7.16x1",
+		"release_date": "2025-01-30",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/7e96335a54b44ef92f6e62eb3c2846d9284649aa"
+	},
+	{
+		"game_version": "2025.02.18.0000.0000",
+		"version_name": "7.18",
+		"release_date": "2025-02-25",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/250f1d4df14979237c58f5a34f877efc7ef17eed",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/d2bf45964ccbe07ac9eaaae30c632b38599ddba4"
+	},
+	{
+		"game_version": "2025.02.27.0000.0000",
+		"version_name": "7.18x1",
+		"release_date": "2025-03-04",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/2bdbadaed9a4c2de3e408c9728af3779ddcdadb1"
+	},
+	{
+		"game_version": "2025.03.18.0000.0000",
+		"version_name": "7.2",
+		"release_date": "2025-03-25",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/3c4910f373e497acd3428c37f6358e341e4cc06d",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/6e3cef680d46e7676f1a76650d6c6ced6f748835"
+	},
+	{
+		"game_version": "2025.03.27.0000.0000",
+		"version_name": "7.2x1",
+		"release_date": "2025-03-31",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/96f70d16f5c446d0ab16289445cdb133f2ec076f"
+	},
+	{
+		"game_version": "2025.04.16.0000.0000",
+		"version_name": "7.21",
+		"release_date": "2025-04-22",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/6f824223a7e10da7b9b7dfc84f626d10d4df88b3",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/44a9ee95c79cdb95067b93820ffcf2b945825af7"
+	},
+	{
+		"game_version": "2025.05.17.0000.0000",
+		"version_name": "7.25",
+		"release_date": "2025-05-27",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/3c12f110983c5f4288d43aa5ac2ed3c022a75b48",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/6db854d9879b52448a14214722605efdcdc7fe15"
+	},
+	{
+		"game_version": "2025.06.10.0000.0000",
+		"version_name": "7.25x1",
+		"release_date": "2025-06-17",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/64a5233dc1a14a2eaa5f60e97f4fa017551edf9a"
+	},
+	{
+		"game_version": "2025.06.19.0000.0000",
+		"version_name": "7.25x2",
+		"release_date": "2025-06-24",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/e0c4b98c10c33de1632cfb2d801f11521d92b260"
+	},
+	{
+		"game_version": "2025.06.28.0000.0000",
+		"version_name": "7.25x3",
+		"release_date": "2025-07-03",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/71a3505430c38e0a63b397719127060da1aa9e81"
+	},
+	{
+		"game_version": "2025.07.30.0000.0000",
+		"version_name": "7.3",
+		"release_date": "2025-08-05",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/c04405c6cbe8519a0b6c8aa5e4d88a5d447419c9",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/53420177d21ae7fdbd76d9fb0fdf801676029e22"
+	},
+	{
+		"game_version": "2025.08.07.0000.0000",
+		"version_name": "7.3x1",
+		"release_date": "2025-08-08",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/94e700dcc95e3de79df767090dc5fd7ebd8c2615"
+	},
+	{
+		"game_version": "2025.08.22.0000.0000",
+		"version_name": "7.31",
+		"release_date": "2025-09-02",
+		"patch_note_url": "https://eu.finalfantasyxiv.com/lodestone/topics/detail/e0d5d1beea95c9dc0e71f280e24da25c699e1216",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/c31d6265a272137f0183e27f3a41712fc5424ed6"
+	},
+	{
+		"game_version": "2025.09.04.0000.0000",
+		"version_name": "7.31x1",
+		"release_date": "2025-09-05",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/69d582b0266503e636cbfd0b857a671349224079"
+	},
+	{
+		"game_version": "2025.09.30.0000.0000",
+		"version_name": "7.35",
+		"release_date": "2025-10-07",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/9d2cad7a1028016719060b5ae3caeb5e369c89e9",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/3302823b6be87bf622591393bc4358a244941098"
+	},
+	{
+		"game_version": "2025.10.13.0000.0000",
+		"version_name": "7.35x1",
+		"release_date": "2025-10-16",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/9ddc4a9551aa162fc1880e6be75f3f6b152f26ab"
+	},
+	{
+		"game_version": "2025.10.30.0000.0000",
+		"version_name": "7.38",
+		"release_date": "2025-11-11",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/85a6675e2d561446784faae5a43fac4af65554f1",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/5d7381401326838573f3edd0d05f4d065ce12f8b"
+	},
+	{
+		"game_version": "2025.12.09.0000.0000",
+		"version_name": "7.4",
+		"release_date": "2025-12-16",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/06944d892fd98cc00b2a28ff77edbafa4f7eef54",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/5ea61ffdfe3fc6a27e68b84b2a0fa1259d835815"
+	},
+	{
+		"game_version": "2025.12.18.0000.0000",
+		"version_name": "7.4x1",
+		"release_date": "2025-12-19",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/4d944abc292e3ca192d306772b229dafba195244"
+	},
+	{
+		"game_version": "2025.12.23.0000.0000",
+		"version_name": "7.4x2",
+		"release_date": "2025-12-25",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/be28165e0c1a738d51aa03e59c6d673905a2dce4"
+	},
+	{
+		"game_version": "2026.01.21.0000.0000",
+		"version_name": "7.41",
+		"release_date": "2026-01-27",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/fa89e48b03a6bf6deac50a23fdfc39f7df64fb2a/",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/e14d11070a63a522b81d040ad4b5790e0da8debf"
+	},
+	{
+		"game_version": "2026.01.30.0000.0000",
+		"version_name": "7.41x1",
+		"release_date": "2026-02-05",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/e1cabf2fe5698223626bd53e6b6057a7612cf8fe"
+	}
+]
