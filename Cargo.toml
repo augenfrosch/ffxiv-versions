@@ -2,11 +2,13 @@
 members = [
     "re-export",
 	"types",
+	"util",
 ]
 resolver = "3"
 
 [workspace.dependencies]
 ffxiv-version-types = { path = "./types" }
+ffxiv-version-util = { path = "./util" }
 
 anyhow = { version = "1.0" }
 chrono = { version = "0.4" }

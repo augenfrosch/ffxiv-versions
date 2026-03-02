@@ -222,6 +222,7 @@ dependencies = [
  "clap",
  "csv",
  "ffxiv-version-types",
+ "ffxiv-version-util",
  "serde",
  "serde_json",
  "tokio",
@@ -237,6 +238,18 @@ dependencies = [
  "serde",
  "serde_json",
  "url",
+]
+
+[[package]]
+name = "ffxiv-version-util"
+version = "0.0.0"
+dependencies = [
+ "anyhow",
+ "csv",
+ "ffxiv-version-types",
+ "serde",
+ "serde_json",
+ "tokio",
 ]
 
 [[package]]
