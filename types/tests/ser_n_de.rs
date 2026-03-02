@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use chrono::NaiveDate;
-use ffxiv_version_types::{GameVersion, Version};
+use ffxiv_versions_types::{GameVersion, Version};
 use serde::Serialize;
 use url::Url;
 

@@ -1,5 +1,5 @@
 [package]
-name = "ffxiv-version-util"
+name = "ffxiv-versions-util"
 version = "0.0.0"
 edition = "2024"
 
@@ -10,7 +10,7 @@ workspace = true
 crate-type = ["rlib"]
 
 [dependencies]
-ffxiv-version-types = { workspace = true }
+ffxiv-versions-types = { workspace = true }
 
 anyhow = { workspace = true }
 csv = { workspace = true }

@@ -1,11 +1,11 @@
 [package]
-name = "ffxiv-version-re-export"
+name = "ffxiv-versions-re-export"
 version = "0.0.0"
 edition = "2024"
 
 [dependencies]
-ffxiv-version-types = { workspace = true }
-ffxiv-version-util = { workspace = true }
+ffxiv-versions-types = { workspace = true }
+ffxiv-versions-util = { workspace = true }
 
 anyhow = { workspace = true }
 clap = { workspace = true, features = ["derive"] }

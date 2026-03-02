@@ -1,5 +1,5 @@
 use anyhow::Result;
-use ffxiv_version_types::Version;
+use ffxiv_versions_types::Version;
 use serde::ser::Serialize;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 

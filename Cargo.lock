@@ -215,21 +215,21 @@ dependencies = [
 ]
 
 [[package]]
-name = "ffxiv-version-re-export"
+name = "ffxiv-versions-re-export"
 version = "0.0.0"
 dependencies = [
  "anyhow",
  "clap",
  "csv",
- "ffxiv-version-types",
- "ffxiv-version-util",
+ "ffxiv-versions-types",
+ "ffxiv-versions-util",
  "serde",
  "serde_json",
  "tokio",
 ]
 
 [[package]]
-name = "ffxiv-version-types"
+name = "ffxiv-versions-types"
 version = "0.0.0"
 dependencies = [
  "anyhow",
@@ -241,12 +241,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "ffxiv-version-util"
+name = "ffxiv-versions-util"
 version = "0.0.0"
 dependencies = [
  "anyhow",
  "csv",
- "ffxiv-version-types",
+ "ffxiv-versions-types",
  "serde",
  "serde_json",
  "tokio",

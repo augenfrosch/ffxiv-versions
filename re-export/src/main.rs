@@ -2,7 +2,7 @@ use std::{fmt::Display, path::Path, sync::Arc};
 
 use anyhow::{Context, Result};
 use clap::{Parser, ValueEnum};
-use ffxiv_version_util::rw::*;
+use ffxiv_versions_util::rw::*;
 
 const FILES: [&str; 4] = ["global", "cn", "kr", "tw"];
 const FILE_FORMATS: [FileFormat; 2] = [FileFormat::Csv, FileFormat::Json];
