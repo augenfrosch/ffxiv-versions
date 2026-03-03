@@ -222,5 +222,12 @@
 		"release_date": "2026-02-05",
 		"patch_note_url": null,
 		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/e1cabf2fe5698223626bd53e6b6057a7612cf8fe"
+	},
+	{
+		"game_version": "2026.02.20.0000.0000",
+		"version_name": "7.45",
+		"release_date": "2026-03-03",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/2e8a10c44121af50ce86e1b605e10608e15f24d6/",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/5dde1bc306146eec8b6fa190097d142bc56ad048"
 	}
 ]

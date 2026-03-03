@@ -103,5 +103,12 @@
 		"release_date": "2026-02-05",
 		"patch_note_url": null,
 		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/384526"
+	},
+	{
+		"game_version": "2026.02.20.0000.0000",
+		"version_name": "7.45",
+		"release_date": "2026-03-03",
+		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/385438",
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/385554"
 	}
 ]
