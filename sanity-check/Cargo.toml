@@ -1,0 +1,18 @@
+[package]
+name = "ffxiv-versions-sanity-check"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+ffxiv-versions-types = { workspace = true }
+ffxiv-versions-util = { workspace = true }
+
+anyhow = { workspace = true }
+chrono = { workspace = true }
+csv = { workspace = true }
+env_logger = { version = "0.11.9" }
+graphql_client = { version = "0.16" }
+reqwest = { version = "0.13", features = ["json"] }
+serde = { workspace = true }
+serde_json = { workspace = true, features = ["std"] }
+tokio = { workspace = true, features = ["full"] }

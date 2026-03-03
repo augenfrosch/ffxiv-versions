@@ -1,6 +1,7 @@
 [workspace]
 members = [
     "re-export",
+	"sanity-check",
 	"types",
 	"util",
 ]

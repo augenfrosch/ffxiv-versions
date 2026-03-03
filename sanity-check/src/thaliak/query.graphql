@@ -1,0 +1,20 @@
+
+query AllBaseGameRepositoriesQuery {
+	global: repository(slug: "4e9a232b") {
+		...repositoryVersions
+	}
+	kr: repository(slug: "de199059") {
+		...repositoryVersions
+	}
+	cn: repository(slug: "c38effbc") {
+		...repositoryVersions
+	}
+}
+
+fragment repositoryVersions on Repository {
+  versions {
+		versionString
+		firstSeen
+		firstOffered
+	}
+}
