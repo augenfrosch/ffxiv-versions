@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use anyhow::{Context, Result, ensure};
-use ffxiv_versions_types::Version;
+use ffxiv_versions_types::{GameVersion, Version};
 use ffxiv_versions_util::rw::read_csv_file;
 use tokio::sync::RwLock;
 
@@ -118,20 +118,40 @@ async fn check_version_thaliak(
 	thaliak_versions: &[BaseGameRepositoriesResponseVersion],
 ) -> Result<()> {
 	for version in versions {
-		let game_version_date = version
-					.game_version
-					.date
-					.and_time(chrono::NaiveTime::from_hms_opt(8, 0, 0).context("Invalid time")?)
-					.and_utc();
-		let release_date = version
-			.release_date
-			.and_time(chrono::NaiveTime::from_hms_opt(10, 0, 0).context("Invalid time")?)
-			.and_utc();
-		for thaliak_version in thaliak_versions {
-			
+		let mut seen_version = false;
+		for thaliak_version in thaliak_versions
+			.iter()
+			.filter(|th_ver| version.release_date == th_ver.first_seen.date_naive())
+		{
+			if thaliak_version.first_seen.date_naive() != thaliak_version.first_offered.date_naive()
+			{
+				// Global only; Thaliak was only offered patch with a delay. Release date is correct / the same as `first_seen`'s date
+				ensure!(thaliak_version.version_string == "2025.06.10.0000.0000");
+			}
+			// This is a workaround for HIST Patches not being parsed. TODO: fix this to make sure it isn't skipping more
+			if let Ok(thaliak_game_version) = thaliak_version.version_string.parse::<GameVersion>()
+			{
+				let same_version = thaliak_game_version == version.game_version;
 
-			ensure!(game_version_date <= thaliak_version.first_seen)
+				if !same_version {
+					ensure!(
+						thaliak_game_version < version.game_version,
+						"Game version seen by Thaliak on {} is greater: {} > {}",
+						version.release_date,
+						thaliak_game_version,
+						version.game_version
+					);
+				} else {
+					seen_version = true;
+				}
+			}
 		}
+		ensure!(
+			seen_version,
+			"Game version {} not seen by Thaliak on {}",
+			version.game_version,
+			version.release_date
+		);
 	}
 
 	Ok(())
