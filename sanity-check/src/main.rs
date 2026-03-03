@@ -8,9 +8,12 @@ use tokio::sync::RwLock;
 mod thaliak;
 use thaliak::get_thaliak_versions;
 
-use crate::thaliak::BaseGameRepositoriesResponseVersion;
+use crate::thaliak::BaseGameRepositoriesResponse;
 
 const FILES: [&str; 4] = ["global", "cn", "kr", "tw"];
+
+type Versions = Arc<RwLock<Vec<Version>>>;
+type ThaliakVersions = Arc<RwLock<BaseGameRepositoriesResponse>>;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -37,44 +40,14 @@ async fn main() -> Result<()> {
 			let versions = Arc::new(RwLock::new(read_csv_file(file).await?));
 
 			let mut join_set: tokio::task::JoinSet<Result<()>> = tokio::task::JoinSet::new();
-			{
-				let versions = versions.clone();
-				join_set.spawn(async move { check_versions_basic(&versions.read().await).await });
-			}
-			{
-				let versions = versions.clone();
-				let thaliak_versions = thaliak_versions.clone();
-				match file_name {
-					"global" => {
-						join_set.spawn(async move {
-							check_version_thaliak(
-								&versions.read().await,
-								&thaliak_versions.read().await.global,
-							)
-							.await
-						});
-					},
-					"cn" => {
-						join_set.spawn(async move {
-							check_version_thaliak(
-								&versions.read().await,
-								&thaliak_versions.read().await.cn,
-							)
-							.await
-						});
-					},
-					"kr" => {
-						join_set.spawn(async move {
-							check_version_thaliak(
-								&versions.read().await,
-								&thaliak_versions.read().await.kr,
-							)
-							.await
-						});
-					},
-					_ => {},
-				};
-			}
+
+			join_set.spawn(check_versions_basic(versions.clone()));
+
+			join_set.spawn(check_version_thaliak(
+				versions.clone(),
+				thaliak_versions.clone(),
+				file_name,
+			));
 
 			while let Some(res) = join_set.join_next().await {
 				res??;
@@ -89,19 +62,14 @@ async fn main() -> Result<()> {
 	Ok(())
 }
 
-async fn check_versions_basic(versions: &[Version]) -> Result<()> {
+async fn check_versions_basic(versions: Versions) -> Result<()> {
+	let versions: &[Version] = &versions.read().await;
 	ensure!(versions.len() > 0);
 
 	for version in versions {
 		let release_date = version.release_date;
 		let game_version_date = version.game_version.date;
 		ensure!(game_version_date <= release_date);
-		// ensure!(
-		// 	game_version_date
-		// 		>= release_date
-		// 			.checked_sub_days(chrono::Days::new(32)) // This is kind of meaningless if it is over 1 month (KR version: 2025-09-26 >= 2025-10-28 - X Days)
-		// 			.context("Resulting date would be out of range")?
-		// );
 	}
 
 	for window in versions.windows(2) {
@@ -114,9 +82,17 @@ async fn check_versions_basic(versions: &[Version]) -> Result<()> {
 }
 
 async fn check_version_thaliak(
-	versions: &[Version],
-	thaliak_versions: &[BaseGameRepositoriesResponseVersion],
+	versions: Versions,
+	thaliak_versions: ThaliakVersions,
+	file_name: &str,
 ) -> Result<()> {
+	let versions: &[Version] = &versions.read().await;
+	let thaliak_versions = match file_name {
+		"global" => &thaliak_versions.read().await.global,
+		"cn" => &thaliak_versions.read().await.cn,
+		"kr" => &thaliak_versions.read().await.kr,
+		_ => return Ok(()), // TW is not yet supported by Thaliak (officially / for v1)
+	};
 	for version in versions {
 		let mut seen_version = false;
 		for thaliak_version in thaliak_versions
