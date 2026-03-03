@@ -74,14 +74,14 @@ impl TryFrom<all_base_game_repositories_query::RepositoryVersionsVersions>
 		// This is a workaround for "2023.12.12.0000.0000" missing a `fistOffered`` timestamp and possible similar future issues
 		let (first_seen, first_offered) = match (first_seen, first_offered) {
 			(None, None) => anyhow::bail!("Missing both `firstSeen` & `first_offered` timestamps"),
-			(None, Some(first_offered)) => (DateTime(first_offered.0.clone()), first_offered),
-			(Some(first_seen), None) => (DateTime(first_seen.0.clone()), first_seen),
+			(None, Some(first_offered)) => (DateTime(first_offered.0), first_offered),
+			(Some(first_seen), None) => (DateTime(first_seen.0), first_seen),
 			(Some(first_seen), Some(first_offered)) => (first_seen, first_offered),
 		};
 		Ok(Self {
 			version_string,
-			first_seen: first_seen,
-			first_offered: first_offered,
+			first_seen,
+			first_offered,
 		})
 	}
 }
