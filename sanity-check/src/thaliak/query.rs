@@ -15,19 +15,13 @@ impl std::ops::Deref for DateTime {
 	}
 }
 
-// impl AsRef<chrono::DateTime<chrono::Utc>> for DateTime {
-// 	fn as_ref(&self) -> &chrono::DateTime<chrono::Utc> {
-// 		&self.0
-// 	}
-// }
-
 impl Serialize for DateTime {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where
 		S: serde::Serializer,
 	{
-		let date_time = self.0;
-		serializer.serialize_str(&format!("{date_time:?}"))
+		let datetime = self.0;
+		serializer.serialize_str(&format!("{datetime:?}"))
 	}
 }
 
