@@ -3,6 +3,9 @@ name = "ffxiv-versions-re-export"
 version = "0.0.0"
 edition = "2024"
 
+[lints]
+workspace = true
+
 [dependencies]
 ffxiv-versions-types = { workspace = true }
 ffxiv-versions-util = { workspace = true }

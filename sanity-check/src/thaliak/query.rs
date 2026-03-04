@@ -97,7 +97,7 @@ impl TryFrom<all_base_game_repositories_query::ResponseData> for BaseGameReposit
 			repository_versions: all_base_game_repositories_query::repositoryVersions,
 		) -> Result<Vec<BaseGameRepositoriesResponseVersion>> {
 			let mut versions = Vec::with_capacity(repository_versions.versions.len());
-			for repositroy_version in repository_versions.versions.into_iter() {
+			for repositroy_version in repository_versions.versions {
 				versions.push(repositroy_version.try_into()?);
 			}
 			Ok(versions)

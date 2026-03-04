@@ -112,7 +112,9 @@ async fn check_version_thaliak(
 			{
 				let same_version = thaliak_game_version == version.game_version;
 
-				if !same_version {
+				if same_version {
+					seen_version = true;
+				} else {
 					ensure!(
 						thaliak_game_version < version.game_version,
 						"Game version seen by Thaliak on {} is greater: {} > {}",
@@ -120,8 +122,6 @@ async fn check_version_thaliak(
 						thaliak_game_version,
 						version.game_version
 					);
-				} else {
-					seen_version = true;
 				}
 			}
 		}
@@ -179,7 +179,7 @@ async fn try_parse_update_notice_global(
 		let link_href = selection
 			.next()
 			.and_then(|element_ref| element_ref.attr("href"))
-			.map(|s| s.to_owned());
+			.map(std::borrow::ToOwned::to_owned);
 		// ensure!(selection.next() == None); // Doesn't hold true for global's post early access hotfix (2024.07.06.0000.0000)
 
 		let selector = Selector::parse("article > div:first-of-type")
