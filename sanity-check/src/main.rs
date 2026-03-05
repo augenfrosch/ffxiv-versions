@@ -158,12 +158,12 @@ struct UpdateNoticeInfo {
 const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
 
 async fn try_parse_update_notice_global(
-	response_text: String,
+	response_text: &str,
 	client: reqwest::Client,
 ) -> Result<UpdateNoticeInfo> {
 	use scraper::{Html, Selector};
 	let (datetime, link_href, hotfix) = {
-		let html = Html::parse_document(&response_text);
+		let html = Html::parse_document(response_text);
 
 		let selector = Selector::parse("article > header > time > script")
 			.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
@@ -227,7 +227,7 @@ async fn try_parse_update_notice_global(
 	}
 }
 
-fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNoticeInfo> {
+fn try_parse_update_notice_cn(response_text: &str) -> Result<UpdateNoticeInfo> {
 	use serde::{Deserialize, Deserializer};
 	#[derive(Deserialize)]
 	#[serde(rename_all = "PascalCase")]
@@ -257,7 +257,7 @@ fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNoticeInfo>
 		Ok(dt)
 	}
 
-	let news_detail: NewsDetail = serde_json::from_str(&response_text)?;
+	let news_detail: NewsDetail = serde_json::from_str(response_text)?;
 	let re = Regex::new(
 		r"Ver.(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）",
 	)?; // TODO: see above
@@ -277,14 +277,14 @@ fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNoticeInfo>
 	}
 }
 
-fn try_parse_update_notice_kr(response_text: String) -> Result<UpdateNoticeInfo> {
+fn try_parse_update_notice_kr(response_text: &str) -> Result<UpdateNoticeInfo> {
 	use scraper::{Html, Selector};
 
 	const OFFSET: chrono::FixedOffset =
 		chrono::FixedOffset::east_opt(9 * (60 * 60)).expect("Offset seconds OOB");
 	const DATETIME_FORMAT: &str = "%y-%m-%d %H:%M";
 
-	let html = Html::parse_document(&response_text);
+	let html = Html::parse_document(response_text);
 
 	let selector = Selector::parse(".ff14_board_view > .board_sub_title > .board_info > .date")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
@@ -336,14 +336,14 @@ fn try_parse_update_notice_kr(response_text: String) -> Result<UpdateNoticeInfo>
 	}
 }
 
-fn try_parse_update_notice_tw(response_text: String) -> Result<UpdateNoticeInfo> {
+fn try_parse_update_notice_tw(response_text: &str) -> Result<UpdateNoticeInfo> {
 	use scraper::{Html, Selector};
 
 	const OFFSET: chrono::FixedOffset =
 		chrono::FixedOffset::east_opt(8 * (60 * 60)).expect("Offset seconds OOB");
 	const DATETIME_FORMAT: &str = "%Y-%m-%d %H:%M";
 
-	let html = Html::parse_document(&response_text);
+	let html = Html::parse_document(response_text);
 
 	// The TW update notices are also their maintenance notices and (unlike CN & KR) they apparently
 	// also don't make a new one announcing the end of the maintenance and instead update the first one (this makes getting the date much more involved)
@@ -450,11 +450,11 @@ async fn check_versions_update_notices(versions: Versions, file_name: &str) -> R
 				.await?;
 			let update_notice_info = match file_name {
 				"global" => {
-					Some(try_parse_update_notice_global(response_text, client.clone()).await?)
+					Some(try_parse_update_notice_global(&response_text, client.clone()).await?)
 				},
-				"cn" => Some(try_parse_update_notice_cn(response_text)?),
-				"kr" => Some(try_parse_update_notice_kr(response_text)?),
-				"tw" => Some(try_parse_update_notice_tw(response_text)?),
+				"cn" => Some(try_parse_update_notice_cn(&response_text)?),
+				"kr" => Some(try_parse_update_notice_kr(&response_text)?),
+				"tw" => Some(try_parse_update_notice_tw(&response_text)?),
 				// temp; TODO remove this / make this non optional
 				_ => None,
 			};
@@ -482,7 +482,7 @@ async fn check_versions_update_notices(versions: Versions, file_name: &str) -> R
 					// (if the translation I'm working with is correct, which it might very not be). Maybe it was written early and the date was not updated when it was published
 					// All other datetime references I could find indicate htat Nov. 4th being correct
 					// TODO: Find a better way of defining expceptions (this is getting silly at just 3 instances and I haven't even implemented it for KR and TW)
-					ensure!(version.game_version.to_string() == "2025.10.23.0000.0000")
+					ensure!(version.game_version.to_string() == "2025.10.23.0000.0000");
 				} else {
 					ensure!(
 						version.release_date == update_notice_info.datetime.date_naive(),
@@ -496,7 +496,7 @@ async fn check_versions_update_notices(versions: Versions, file_name: &str) -> R
 
 				match update_notice_info.update_notice_type {
 					UpdateNoticeType::Hotfix => ensure!(
-						version.patch_note_url == None,
+						version.patch_note_url.is_none(),
 						"Hotfixes should not have patch notes: {}",
 						version.game_version
 					),
