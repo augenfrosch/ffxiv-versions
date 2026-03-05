@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use anyhow::{Context, Result, bail, ensure};
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, NaiveDateTime, Utc};
 use ffxiv_versions_types::{GameVersion, Version};
 use ffxiv_versions_util::rw::read_csv_file;
 use regex::Regex;
@@ -105,7 +105,10 @@ async fn check_version_thaliak(
 			if thaliak_version.first_seen.date_naive() != thaliak_version.first_offered.date_naive()
 			{
 				// Global only; Thaliak was only offered patch with a delay. Release date is correct / the same as `first_seen`'s date
-				ensure!(file_name == "global" && thaliak_version.version_string == "2025.06.10.0000.0000");
+				ensure!(
+					file_name == "global"
+						&& thaliak_version.version_string == "2025.06.10.0000.0000"
+				);
 			}
 			// This is a workaround for HIST Patches not being parsed. TODO: fix this to make sure it isn't skipping more
 			if let Ok(thaliak_game_version) = thaliak_version.version_string.parse::<GameVersion>()
@@ -224,13 +227,13 @@ async fn try_parse_update_notice_global(
 	}
 }
 
-async fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNoticeInfo> {
+fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNoticeInfo> {
 	use serde::{Deserialize, Deserializer};
 	#[derive(Deserialize)]
 	#[serde(rename_all = "PascalCase")]
 	struct NewsDetailData {
 		#[serde(deserialize_with = "deserialize_datetime")]
-		publish_date: DateTime<Utc>,
+		publish_date: DateTime<chrono::FixedOffset>,
 		content: String,
 	}
 	#[derive(Deserialize)]
@@ -238,26 +241,29 @@ async fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNotic
 	struct NewsDetail {
 		data: NewsDetailData,
 	}
-	fn deserialize_datetime<'de, D>(deserializer: D) -> Result<DateTime<Utc>, D::Error>
+	fn deserialize_datetime<'de, D>(
+		deserializer: D,
+	) -> Result<DateTime<chrono::FixedOffset>, D::Error>
 	where
 		D: Deserializer<'de>,
 	{
 		const OFFSET: chrono::FixedOffset =
-			chrono::FixedOffset::west_opt(8 * (60 * 60)).expect("Offset seconds OOB");
-
+			chrono::FixedOffset::east_opt(8 * (60 * 60)).expect("Offset seconds OOB");
+		const DATETIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S";
 		let s = String::deserialize(deserializer)?;
-		let ndt = chrono::NaiveDateTime::parse_from_str(&s, "%Y/%m/%d %H:%M:%S")
+		let ndt = chrono::NaiveDateTime::parse_from_str(&s, DATETIME_FORMAT)
 			.map_err(|_| serde::de::Error::custom("DateTime could not be deserialized"))?;
 		let dt: DateTime<chrono::FixedOffset> = DateTime::from_naive_utc_and_offset(ndt, OFFSET);
-		Ok(dt.to_utc())
+		Ok(dt)
 	}
 
 	let news_detail: NewsDetail = serde_json::from_str(&response_text)?;
-	let re =
-		Regex::new(r"Ver.(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）")?; // TODO: see above
+	let re = Regex::new(
+		r"Ver.(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）",
+	)?; // TODO: see above
 	match re.captures(&news_detail.data.content) {
 		Some(captures) => Ok(UpdateNoticeInfo {
-			datetime: news_detail.data.publish_date,
+			datetime: news_detail.data.publish_date.to_utc(),
 			update_notice_type: UpdateNoticeType::NamedPatch {
 				patch_note_url: None,
 				patch_name: Some(captures["patch"].to_owned()),
@@ -265,9 +271,69 @@ async fn try_parse_update_notice_cn(response_text: String) -> Result<UpdateNotic
 			},
 		}),
 		None => Ok(UpdateNoticeInfo {
-			datetime: news_detail.data.publish_date,
+			datetime: news_detail.data.publish_date.to_utc(),
 			update_notice_type: UpdateNoticeType::Hotfix,
 		}),
+	}
+}
+
+fn try_parse_update_notice_kr(response_text: String) -> Result<UpdateNoticeInfo> {
+	use scraper::{Html, Selector};
+
+	const OFFSET: chrono::FixedOffset =
+		chrono::FixedOffset::east_opt(9 * (60 * 60)).expect("Offset seconds OOB");
+	const DATETIME_FORMAT: &str = "%y-%m-%d %H:%M";
+
+	let html = Html::parse_document(&response_text);
+
+	let selector = Selector::parse(".ff14_board_view > .board_sub_title > .board_info > .date")
+		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
+	let mut selection = html.select(&selector);
+	let mut datetime_text = selection.next().context("Selection is empty")?.text();
+	ensure!(selection.next() == None);
+	let naive_datetime = NaiveDateTime::parse_from_str(
+		datetime_text.next().context("Missing datetime text")?,
+		DATETIME_FORMAT,
+	)
+	.context("Failed to parse DateTime")?;
+	let date_time: DateTime<chrono::FixedOffset> =
+		DateTime::from_naive_utc_and_offset(naive_datetime, OFFSET);
+	ensure!(datetime_text.next() == None);
+
+	let selector = Selector::parse(".ff14_board_view > .board_view_box a")
+		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
+	let mut selection = html.select(&selector);
+	let link_element_ref = selection.next();
+	ensure!(selection.next() == None);
+
+	if let Some(link_element_ref) = link_element_ref {
+		let href_attr = link_element_ref
+			.attr("href")
+			.context("Patch note link is missing href attribute")?;
+		let mut patch_note_url = Url::parse("https://www.ff14.co.kr")?;
+		patch_note_url.set_path(href_attr);
+		let inner_html = link_element_ref.inner_html();
+		let re = Regex::new(r"\[V(?<patch>\d.\d+) 패치노트 바로( )?가기\]")?; // TODO: see above
+		let patch_name = re
+			.captures(&inner_html)
+			.context("Missing patch note link text")?["patch"]
+			.to_owned();
+
+		patch_note_url.set_path(href_attr);
+		Ok(UpdateNoticeInfo {
+			datetime: date_time.to_utc(),
+			update_notice_type: UpdateNoticeType::NamedPatch {
+				patch_note_url: Some(patch_note_url),
+				patch_name: Some(patch_name),
+				game_version: None,
+			},
+		})
+	} else {
+		// Additional marker: "Hot-fix" in the text
+		Ok(UpdateNoticeInfo {
+			datetime: date_time.to_utc(),
+			update_notice_type: UpdateNoticeType::Hotfix,
+		})
 	}
 }
 
@@ -305,43 +371,53 @@ async fn check_versions_update_notices(versions: Versions, file_name: &str) -> R
 				"global" => {
 					Some(try_parse_update_notice_global(response_text, client.clone()).await?)
 				},
-				"cn" => Some(try_parse_update_notice_cn(response_text).await?),
+				"cn" => Some(try_parse_update_notice_cn(response_text)?),
+				"kr" => Some(try_parse_update_notice_kr(response_text)?),
 				// temp; TODO remove this / make this non optional
 				_ => None,
 			};
 
 			if let Some(update_notice_info) = update_notice_info {
-				if file_name == "cn" {
-					if version.version_name.ends_with(".0")  {
-						// CN's 7.0 update notices are combined with maintenance-end notices, resulting in a larger delta
-						// depending on the patch release timing and/or length of the maintenace
-						let time_delta = update_notice_info.datetime.date_naive() - version.release_date;
-						ensure!(
-							time_delta.num_days() <= 1,
-							"Version's release date is not (reasonably close) before update notices release: {} vs {} ({:?})",
-							version.release_date,
-							update_notice_info.datetime.date_naive(),
-							update_notice_info.datetime
-						);
-					} else if version.release_date != update_notice_info.datetime.date_naive() {
-						// CN's 7.35 (+7.38) update notice is dated Nov. 3rd but talks about the maintenance on the 4th being completed
-						// (if the translation I'm working with is correct, which it might very not be). Maybe it was written early and the date was not updated when it was published
-						// All other datetime references I could find indicate htat Nov. 4th being correct
-						// TODO: Find a better way of defining expceptions (this is getting silly at just 3 instances and I haven't even implemented it for KR and TW)
-						ensure!(version.game_version.to_string() == "2025.10.23.0000.0000")
-					}
+				if (file_name == "cn" || file_name == "kr") && version.version_name.ends_with(".0")
+				{
+					// CN & KR update notices are combined with maintenance-end notices, resulting in a larger delta
+					// depending on the patch release timing and/or length of the maintenace, such as for an expansions release.
+					// The downloads, here for 7.0, are available one day early for these versions
+					let time_delta =
+						update_notice_info.datetime.date_naive() - version.release_date;
+					ensure!(
+						time_delta.num_days() <= 1,
+						"Version {} release date is not (reasonably close) before update notices release: {} vs {} ({:?})",
+						version.game_version,
+						version.release_date,
+						update_notice_info.datetime.date_naive(),
+						update_notice_info.datetime
+					);
+				} else if file_name == "cn"
+					&& version.release_date != update_notice_info.datetime.date_naive()
+				{
+					// CN's 7.35 (+7.38) update notice is dated Nov. 3rd but talks about the maintenance on the 4th being completed
+					// (if the translation I'm working with is correct, which it might very not be). Maybe it was written early and the date was not updated when it was published
+					// All other datetime references I could find indicate htat Nov. 4th being correct
+					// TODO: Find a better way of defining expceptions (this is getting silly at just 3 instances and I haven't even implemented it for KR and TW)
+					ensure!(version.game_version.to_string() == "2025.10.23.0000.0000")
 				} else {
 					ensure!(
 						version.release_date == update_notice_info.datetime.date_naive(),
-						"Version's release date does not match update notices release: {} vs {} ({:?})",
+						"Version {}  release date does not match update notices release: {} vs {} ({:?})",
+						version.game_version,
 						version.release_date,
 						update_notice_info.datetime.date_naive(),
 						update_notice_info.datetime
 					);
 				}
-				
+
 				match update_notice_info.update_notice_type {
-					UpdateNoticeType::Hotfix => ensure!(version.patch_note_url == None, "Hotfixes should not have patch notes: {}", version.game_version),
+					UpdateNoticeType::Hotfix => ensure!(
+						version.patch_note_url == None,
+						"Hotfixes should not have patch notes: {}",
+						version.game_version
+					),
 					UpdateNoticeType::NamedPatch {
 						patch_note_url,
 						patch_name,
