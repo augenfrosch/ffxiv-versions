@@ -64,11 +64,7 @@ pub async fn parse_update_notice(
 
 		Ok(UpdateNoticeInfo {
 			datetime,
-			update_notice_type: UpdateNoticeType::NamedPatch {
-				patch_note_url: Some(patch_note_url),
-				patch_name: None,
-				game_version: None,
-			},
+			update_notice_type: UpdateNoticeType::NamedPatchGlobal { patch_note_url },
 		})
 	} else {
 		bail!("Failed to parse update notice")

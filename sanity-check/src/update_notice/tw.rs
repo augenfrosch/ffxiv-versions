@@ -74,10 +74,9 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 
 		Ok(UpdateNoticeInfo {
 			datetime: date_time.to_utc(),
-			update_notice_type: UpdateNoticeType::NamedPatch {
-				patch_note_url: Some(patch_note_url),
-				patch_name: Some(patch_name),
-				game_version: None,
+			update_notice_type: UpdateNoticeType::NamedPatchKrTw {
+				patch_note_url,
+				patch_name,
 			},
 		})
 	} else {

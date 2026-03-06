@@ -39,10 +39,9 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 	match re.captures(&news_detail.data.content) {
 		Some(captures) => Ok(UpdateNoticeInfo {
 			datetime: news_detail.data.publish_date.to_utc(),
-			update_notice_type: UpdateNoticeType::NamedPatch {
-				patch_note_url: None,
-				patch_name: Some(captures["patch"].to_owned()),
-				game_version: Some(captures["game_version"].parse()?),
+			update_notice_type: UpdateNoticeType::NamedPatchCn {
+				patch_name: captures["patch"].to_owned(),
+				game_version: captures["game_version"].parse()?,
 			},
 		}),
 		None => Ok(UpdateNoticeInfo {
