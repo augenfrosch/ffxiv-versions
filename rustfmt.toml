@@ -7,4 +7,4 @@ match_block_trailing_comma = true
 
 # nightly
 #group_imports = "StdExternalCrate"
-#imports_granularity  = "Crate"
+#imports_granularity = "Crate"

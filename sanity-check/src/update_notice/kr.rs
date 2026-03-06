@@ -1,6 +1,7 @@
 use anyhow::{Context, Result, ensure};
 use chrono::{DateTime, FixedOffset, NaiveDateTime};
 use regex::Regex;
+use scraper::{Html, Selector};
 use url::Url;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
@@ -19,8 +20,6 @@ impl Regexes {
 }
 
 pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<UpdateNoticeInfo> {
-	use scraper::{Html, Selector};
-
 	const OFFSET: FixedOffset = FixedOffset::east_opt(9 * (60 * 60)).expect("Offset seconds OOB");
 	const DATETIME_FORMAT: &str = "%y-%m-%d %H:%M";
 

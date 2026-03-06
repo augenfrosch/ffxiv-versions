@@ -1,6 +1,7 @@
 use anyhow::Result;
-use chrono::{DateTime, FixedOffset};
+use chrono::{DateTime, FixedOffset, NaiveDateTime};
 use regex::Regex;
+use serde::{Deserialize, Deserializer};
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
@@ -20,7 +21,6 @@ impl Regexes {
 }
 
 pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<UpdateNoticeInfo> {
-	use serde::{Deserialize, Deserializer};
 	#[derive(Deserialize)]
 	#[serde(rename_all = "PascalCase")]
 	struct NewsDetailData {
@@ -41,7 +41,7 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 			FixedOffset::east_opt(8 * (60 * 60)).expect("Offset seconds OOB");
 		const DATETIME_FORMAT: &str = "%Y/%m/%d %H:%M:%S";
 		let s = String::deserialize(deserializer)?;
-		let ndt = chrono::NaiveDateTime::parse_from_str(&s, DATETIME_FORMAT)
+		let ndt = NaiveDateTime::parse_from_str(&s, DATETIME_FORMAT)
 			.map_err(|_| serde::de::Error::custom("DateTime could not be deserialized"))?;
 		let dt: DateTime<FixedOffset> = DateTime::from_naive_utc_and_offset(ndt, OFFSET);
 		Ok(dt)

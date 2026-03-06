@@ -188,7 +188,7 @@ impl UpdateNotices {
 			let regexes = self.regexes.clone();
 
 			// MAYBE add back some parallelization? Doing it sequentially ensures that we don't spam the servers with requests.
-			// Global returned a 429 without any throttling but is currently only ~2x slower than with a 250ms sleep between
+			// Global returned a 429 without any throttling but is currently only ~2-3x slower than with a 250ms sleep between
 			update_notices.push(Some(
 				Self::get_update_notice_info(update_notice_url, data_file, client, regexes).await?,
 			));
@@ -319,7 +319,6 @@ async fn check_versions_thaliak(
 						&& thaliak_version.version_string == "2025.06.10.0000.0000"
 				);
 			}
-			// This is a workaround for HIST Patches not being parsed. TODO: fix this to make sure it isn't skipping more
 			if let Ok(thaliak_game_version) = thaliak_version.version_string.parse::<GameVersion>()
 			{
 				let same_version = thaliak_game_version == version.game_version;
@@ -335,6 +334,9 @@ async fn check_versions_thaliak(
 						version.game_version
 					);
 				}
+			} else {
+				// This is a workaround for HIST patch names not being parsed. MAYBE implement this for future stuff
+				ensure!(thaliak_version.version_string.starts_with('H'));
 			}
 		}
 		ensure!(

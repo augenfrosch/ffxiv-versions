@@ -1,6 +1,7 @@
 use anyhow::{Context, Result, bail, ensure};
 use chrono::{DateTime, Utc};
 use regex::Regex;
+use scraper::{Html, Selector};
 use url::Url;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
@@ -25,7 +26,6 @@ pub async fn parse_update_notice(
 	regexes: &Regexes,
 	client: reqwest::Client,
 ) -> Result<UpdateNoticeInfo> {
-	use scraper::{Html, Selector};
 	let (datetime, link_href, hotfix) = {
 		let html = Html::parse_document(response_text);
 
