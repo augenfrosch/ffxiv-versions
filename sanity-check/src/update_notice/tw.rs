@@ -5,7 +5,23 @@ use url::Url;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
-pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
+pub struct Regexes {
+	maintenance_time_re: Regex,
+	patch_name_re: Regex,
+}
+
+impl Regexes {
+	pub fn compile_all() -> Result<Self> {
+		Ok(Self {
+			maintenance_time_re: Regex::new(
+				r"(?<month>\d{1,2})/(?<day>\d{1,2}) (?<start_time>\d{1,2}:\d{2}) ~ (?<end_time>\d{1,2}:\d{2})",
+			)?,
+			patch_name_re: Regex::new(r"patch_(?<patch>\d.\d+)_notes.html")?,
+		})
+	}
+}
+
+pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<UpdateNoticeInfo> {
 	use scraper::{Html, Selector};
 
 	const OFFSET: FixedOffset = FixedOffset::east_opt(8 * (60 * 60)).expect("Offset seconds OOB");
@@ -29,13 +45,10 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 	let selector = Selector::parse(".content > .article .notice")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
 	let mut selection = html.select(&selector);
-	let re = Regex::new(
-		r"(?<month>\d{1,2})/(?<day>\d{1,2}) (?<start_time>\d{1,2}:\d{2}) ~ (?<end_time>\d{1,2}:\d{2})",
-	)?;
 	while let Some(captures) = selection
 		.next()
 		.and_then(|element_ref| element_ref.text().next())
-		.and_then(|notice_text| re.captures(notice_text))
+		.and_then(|notice_text| regexes.maintenance_time_re.captures(notice_text))
 	{
 		let day = captures["day"].parse()?;
 		let month = captures["month"].parse()?;
@@ -65,9 +78,9 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 			.attr("href")
 			.context("Patch note link is missing href attribute")?;
 		let patch_note_url = Url::parse(href_attr)?;
-		let re = Regex::new(r"patch_(?<patch>\d.\d+)_notes.html")?; // TODO: see above
 		// The patch name is also seen in the text but the pages layout is currently quite volatile
-		let patch_name = re
+		let patch_name = regexes
+			.patch_name_re
 			.captures(href_attr)
 			.context("Missing patch name in URL")?["patch"]
 			.to_owned();

@@ -66,6 +66,10 @@ pub async fn check_versions_update_notices(versions: Versions, data_file: DataFi
 		.user_agent(USER_AGENT)
 		.redirect(reqwest::redirect::Policy::none())
 		.build()?;
+	let regexes_global = global::Regexes::compile_all()?;
+	let regexes_cn = cn::Regexes::compile_all()?;
+	let regexes_kr = kr::Regexes::compile_all()?;
+	let regexes_tw = tw::Regexes::compile_all()?;
 	for (version, update_notice_url) in versions
 		.iter()
 		.filter_map(|version| version.update_notice_url.as_ref().map(|url| (version, url)))
@@ -92,10 +96,12 @@ pub async fn check_versions_update_notices(versions: Versions, data_file: DataFi
 			.text()
 			.await?;
 		let update_notice_info = match data_file {
-			DataFile::Global => global::parse_update_notice(&response_text, client.clone()).await?,
-			DataFile::Cn => cn::parse_update_notice(&response_text)?,
-			DataFile::Kr => kr::parse_update_notice(&response_text)?,
-			DataFile::Tw => tw::parse_update_notice(&response_text)?,
+			DataFile::Global => {
+				global::parse_update_notice(&response_text, &regexes_global, client.clone()).await?
+			},
+			DataFile::Cn => cn::parse_update_notice(&response_text, &regexes_cn)?,
+			DataFile::Kr => kr::parse_update_notice(&response_text, &regexes_kr)?,
+			DataFile::Tw => tw::parse_update_notice(&response_text, &regexes_tw)?,
 		};
 
 		if (data_file == DataFile::Cn || data_file == DataFile::Kr)

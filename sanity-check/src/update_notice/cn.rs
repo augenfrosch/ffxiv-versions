@@ -4,7 +4,21 @@ use regex::Regex;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
-pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
+pub struct Regexes {
+	game_version_re: Regex,
+}
+
+impl Regexes {
+	pub fn compile_all() -> Result<Self> {
+		Ok(Self {
+			game_version_re: Regex::new(
+				r"Ver.(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）",
+			)?,
+		})
+	}
+}
+
+pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<UpdateNoticeInfo> {
 	use serde::{Deserialize, Deserializer};
 	#[derive(Deserialize)]
 	#[serde(rename_all = "PascalCase")]
@@ -33,10 +47,7 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 	}
 
 	let news_detail: NewsDetail = serde_json::from_str(response_text)?;
-	let re = Regex::new(
-		r"Ver.(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）",
-	)?; // TODO: see above
-	match re.captures(&news_detail.data.content) {
+	match regexes.game_version_re.captures(&news_detail.data.content) {
 		Some(captures) => Ok(UpdateNoticeInfo {
 			datetime: news_detail.data.publish_date.to_utc(),
 			update_notice_type: UpdateNoticeType::NamedPatchCn {

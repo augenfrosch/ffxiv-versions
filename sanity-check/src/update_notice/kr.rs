@@ -5,7 +5,19 @@ use url::Url;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
-pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
+pub struct Regexes {
+	patch_name_re: Regex,
+}
+
+impl Regexes {
+	pub fn compile_all() -> Result<Self> {
+		Ok(Self {
+			patch_name_re: Regex::new(r"\[V(?<patch>\d.\d+) 패치노트 바로( )?가기\]")?,
+		})
+	}
+}
+
+pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<UpdateNoticeInfo> {
 	use scraper::{Html, Selector};
 
 	const OFFSET: FixedOffset = FixedOffset::east_opt(9 * (60 * 60)).expect("Offset seconds OOB");
@@ -40,8 +52,8 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 		let mut patch_note_url = Url::parse("https://www.ff14.co.kr")?;
 		patch_note_url.set_path(href_attr);
 		let inner_html = link_element_ref.inner_html();
-		let re = Regex::new(r"\[V(?<patch>\d.\d+) 패치노트 바로( )?가기\]")?; // TODO: see above
-		let patch_name = re
+		let patch_name = regexes
+			.patch_name_re
 			.captures(&inner_html)
 			.context("Missing patch note link text")?["patch"]
 			.to_owned();

@@ -5,8 +5,23 @@ use url::Url;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
+pub struct Regexes {
+	timestamp_re: Regex,
+	hotfix_re: Regex,
+}
+
+impl Regexes {
+	pub fn compile_all() -> Result<Self> {
+		Ok(Self {
+			timestamp_re: Regex::new(r"dst_strftime\((?<timestamp>\d+), '.+?'\);")?,
+			hotfix_re: Regex::new("FINAL FANTASY XIV Hot[fF]ix(es)?")?,
+		})
+	}
+}
+
 pub async fn parse_update_notice(
 	response_text: &str,
+	regexes: &Regexes,
 	client: reqwest::Client,
 ) -> Result<UpdateNoticeInfo> {
 	use scraper::{Html, Selector};
@@ -18,9 +33,12 @@ pub async fn parse_update_notice(
 		let mut selection = html.select(&selector);
 		let datetime = selection.next().context("Selection is empty")?.inner_html();
 		ensure!(selection.next() == None);
-		let re = Regex::new(r"dst_strftime\((?<timestamp>\d+), '.+?'\);")?; // TODO: don't compile each call
 		let datetime: DateTime<Utc> = DateTime::from_timestamp_secs(
-			re.captures(&datetime).context("Missing timestamp")?["timestamp"].parse()?,
+			regexes
+				.timestamp_re
+				.captures(&datetime)
+				.context("Missing timestamp")?["timestamp"]
+				.parse()?,
 		)
 		.context("Timestamp out of range for DateTime")?;
 
@@ -36,10 +54,13 @@ pub async fn parse_update_notice(
 		let selector = Selector::parse("article > div:first-of-type")
 			.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
 		let mut selection = html.select(&selector);
-		let re = Regex::new("FINAL FANTASY XIV Hot[fF]ix(es)?")?; // TODO: see above 
 		let hotfix = selection
 			.next()
-			.map(|element_ref| element_ref.text().any(|text| re.is_match(text)))
+			.map(|element_ref| {
+				element_ref
+					.text()
+					.any(|text| regexes.hotfix_re.is_match(text))
+			})
 			.context("Selection is empty")?;
 		ensure!(selection.next() == None);
 
