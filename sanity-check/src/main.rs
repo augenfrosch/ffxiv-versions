@@ -120,10 +120,10 @@ struct UpdateNotices {
 	versions: Arc<Versions>,
 	client: reqwest::Client,
 	regexes: Arc<UpdateNoticeRegexes>,
-	global: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>, // This would be much simpler if TW had a patch notice for 7.0; MAYBE `Option` would be better
-	cn: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>,
-	kr: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>, // TODO: change these to Option; sincce Iterator::zip would be much less error prone
-	tw: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>,
+	global: OnceCell<Vec<Option<UpdateNoticeInfo>>>, // This would be much simpler if TW had a patch notice for 7.0
+	cn: OnceCell<Vec<Option<UpdateNoticeInfo>>>,
+	kr: OnceCell<Vec<Option<UpdateNoticeInfo>>>,
+	tw: OnceCell<Vec<Option<UpdateNoticeInfo>>>,
 }
 
 impl UpdateNotices {
@@ -161,16 +161,15 @@ impl UpdateNotices {
 	async fn get_update_notices_info(
 		&self,
 		data_file: DataFile,
-	) -> Result<Vec<(GameVersion, UpdateNoticeInfo)>> {
+	) -> Result<Vec<Option<UpdateNoticeInfo>>> {
 		let versions = self.versions.get(data_file).await;
 
-		let mut join_set: tokio::task::JoinSet<Result<(GameVersion, UpdateNoticeInfo)>> =
-			tokio::task::JoinSet::new();
-		let mut abort_handle: Option<tokio::task::AbortHandle> = None;
-		for (version, update_notice_url) in versions
-			.iter()
-			.filter_map(|version| version.update_notice_url.as_ref().map(|url| (version, url)))
-		{
+		let mut update_notices = Vec::with_capacity(versions.len());
+		for version in versions {
+			let Some(update_notice_url) = &version.update_notice_url else {
+				update_notices.push(None);
+				continue;
+			};
 			let update_notice_url = match data_file {
 				DataFile::Cn => {
 					let mut url = Url::parse("https://cqnews.web.sdo.com/api/news/newsDetail")?;
@@ -187,27 +186,18 @@ impl UpdateNotices {
 			};
 			let client = self.client.clone();
 			let regexes = self.regexes.clone();
-			let game_version = version.game_version.clone();
-			if abort_handle.is_some_and(|abort_handle| !abort_handle.is_finished()) {
-				tokio::time::sleep(std::time::Duration::from_millis(250)).await; // TODO: come up with a better system for throttling requests
-			}
-			abort_handle = Some(join_set.spawn(async move {
-				Self::get_update_notice_info(update_notice_url, data_file, client, regexes)
-					.await
-					.map(|update_notice_info| (game_version, update_notice_info))
-			}));
+
+			// MAYBE add back some parallelization? Doing it sequentially ensures that we don't spam the servers with requests.
+			// Global returned a 429 without any throttling but is currently only ~2x slower than with a 250ms sleep between
+			update_notices.push(Some(
+				Self::get_update_notice_info(update_notice_url, data_file, client, regexes).await?,
+			));
 		}
 
-		let mut update_notices = Vec::with_capacity(versions.len());
-		while let Some(res) = join_set.join_next().await {
-			update_notices.push(res??); // TODO: find a better way of doing this
-		}
-
-		// TODO: test if result is sorted
 		Ok(update_notices)
 	}
 
-	pub async fn get(&self, data_file: DataFile) -> &[(GameVersion, UpdateNoticeInfo)] {
+	pub async fn get(&self, data_file: DataFile) -> &[Option<UpdateNoticeInfo>] {
 		let update_notices = match data_file {
 			DataFile::Global => &self.global,
 			DataFile::Cn => &self.cn,
