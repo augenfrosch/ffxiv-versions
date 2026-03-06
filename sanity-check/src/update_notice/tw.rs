@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, bail, ensure};
-use chrono::{DateTime, Datelike, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
+use chrono::{Datelike, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
 use regex::Regex;
 use scraper::{Html, Selector};
 use url::Url;
@@ -64,8 +64,10 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 			end_time,
 		);
 	}
-	let date_time: DateTime<FixedOffset> =
-		DateTime::from_naive_utc_and_offset(naive_datetime, OFFSET);
+	let date_time = naive_datetime
+		.and_local_timezone(OFFSET)
+		.latest()
+		.context("Could not convert datetime using time zone")?;
 
 	let selector = Selector::parse(".content > .article a")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;

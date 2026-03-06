@@ -1,5 +1,5 @@
 use anyhow::{Context, Result, ensure};
-use chrono::{DateTime, FixedOffset, NaiveDateTime};
+use chrono::{FixedOffset, NaiveDateTime};
 use regex::Regex;
 use scraper::{Html, Selector};
 use url::Url;
@@ -36,8 +36,10 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 	)
 	.context("Failed to parse DateTime")?;
 	ensure!(datetime_text.next() == None);
-	let date_time: DateTime<FixedOffset> =
-		DateTime::from_naive_utc_and_offset(naive_datetime, OFFSET);
+	let date_time = naive_datetime
+		.and_local_timezone(OFFSET)
+		.latest()
+		.context("Could not convert datetime using time zone")?;
 
 	let selector = Selector::parse(".ff14_board_view > .board_view_box a")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;

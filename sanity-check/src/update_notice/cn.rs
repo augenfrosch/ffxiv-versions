@@ -43,7 +43,12 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 		let s = String::deserialize(deserializer)?;
 		let ndt = NaiveDateTime::parse_from_str(&s, DATETIME_FORMAT)
 			.map_err(|_| serde::de::Error::custom("DateTime could not be deserialized"))?;
-		let dt: DateTime<FixedOffset> = DateTime::from_naive_utc_and_offset(ndt, OFFSET);
+		let dt: DateTime<FixedOffset> =
+			ndt.and_local_timezone(OFFSET)
+				.latest()
+				.ok_or(serde::de::Error::custom(
+					"DateTime could not be deserialized",
+				))?;
 		Ok(dt)
 	}
 
