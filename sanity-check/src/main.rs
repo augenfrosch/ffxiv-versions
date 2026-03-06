@@ -3,55 +3,274 @@ use std::{path::Path, sync::Arc};
 use anyhow::{Context, Result, ensure};
 use ffxiv_versions_types::{GameVersion, Version};
 use ffxiv_versions_util::{DataFile, rw::read_csv_file};
-use tokio::sync::RwLock;
+use tokio::sync::OnceCell;
+use url::Url;
 
 mod thaliak;
-use thaliak::get_thaliak_versions;
+use thaliak::{
+	BaseGameRepositoriesResponse, BaseGameRepositoriesResponseVersion, get_thaliak_versions,
+};
 
 mod update_notice;
-use update_notice::check_versions_update_notices;
+use update_notice::{UpdateNoticeInfo, check_versions_update_notices};
 
-use crate::thaliak::BaseGameRepositoriesResponse;
+#[derive(Debug)]
+struct Versions {
+	global: OnceCell<Vec<Version>>,
+	cn: OnceCell<Vec<Version>>,
+	kr: OnceCell<Vec<Version>>,
+	tw: OnceCell<Vec<Version>>,
+}
 
-type Versions = Arc<RwLock<Vec<Version>>>;
-type ThaliakVersions = Arc<RwLock<BaseGameRepositoriesResponse>>;
+impl Versions {
+	pub async fn read_source_data_file(data_file: DataFile) -> Result<Vec<Version>> {
+		let file_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+			.parent()
+			.context("Manifest directory has no parent")?
+			.join("data")
+			.join("csv")
+			.join(format!(
+				"{file_name}.csv",
+				file_name = data_file.file_prefix()
+			));
+		let file = tokio::fs::File::open(file_path).await?;
+
+		read_csv_file(file).await
+	}
+
+	pub async fn get(&self, data_file: DataFile) -> &[Version] {
+		let versions = match data_file {
+			DataFile::Global => &self.global,
+			DataFile::Cn => &self.cn,
+			DataFile::Kr => &self.kr,
+			DataFile::Tw => &self.tw,
+		};
+		versions
+			.get_or_init(|| async {
+				Self::read_source_data_file(data_file)
+					.await
+					.expect("Failed to read source data file")
+			})
+			.await
+	}
+
+	pub const fn new() -> Self {
+		Self {
+			global: OnceCell::const_new(),
+			cn: OnceCell::const_new(),
+			kr: OnceCell::const_new(),
+			tw: OnceCell::const_new(),
+		}
+	}
+}
+
+type ThaliakVersion = BaseGameRepositoriesResponseVersion;
+
+#[derive(Debug)]
+struct ThaliakVersions {
+	response: OnceCell<BaseGameRepositoriesResponse>,
+}
+
+impl ThaliakVersions {
+	pub async fn get(&self, data_file: DataFile) -> Option<&[ThaliakVersion]> {
+		let response = self
+			.response
+			.get_or_init(|| async {
+				get_thaliak_versions()
+					.await
+					.expect("Failed to get versions from Thaliak")
+			})
+			.await;
+		match data_file {
+			DataFile::Global => Some(&response.global),
+			DataFile::Cn => Some(&response.cn),
+			DataFile::Kr => Some(&response.kr),
+			DataFile::Tw => None,
+		}
+	}
+
+	pub const fn new() -> Self {
+		Self {
+			response: OnceCell::const_new(),
+		}
+	}
+}
+
+#[derive(Debug)]
+struct UpdateNoticeRegexes {
+	pub global: OnceCell<update_notice::global::Regexes>,
+	pub cn: OnceCell<update_notice::cn::Regexes>,
+	pub kr: OnceCell<update_notice::kr::Regexes>,
+	pub tw: OnceCell<update_notice::tw::Regexes>,
+}
+
+impl UpdateNoticeRegexes {
+	pub fn compile_all() -> Result<Self> {
+		Ok(Self {
+			global: OnceCell::new_with(Some(update_notice::global::Regexes::compile_all()?)),
+			cn: OnceCell::new_with(Some(update_notice::cn::Regexes::compile_all()?)),
+			kr: OnceCell::new_with(Some(update_notice::kr::Regexes::compile_all()?)),
+			tw: OnceCell::new_with(Some(update_notice::tw::Regexes::compile_all()?)),
+		})
+	}
+}
+
+#[derive(Debug)]
+struct UpdateNotices {
+	versions: Arc<Versions>,
+	client: reqwest::Client,
+	regexes: Arc<UpdateNoticeRegexes>,
+	global: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>, // This would be much simpler if TW had a patch notice for 7.0; MAYBE `Option` would be better
+	cn: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>,
+	kr: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>, // TODO: change these to Option; sincce Iterator::zip would be much less error prone
+	tw: OnceCell<Vec<(GameVersion, UpdateNoticeInfo)>>,
+}
+
+impl UpdateNotices {
+	pub async fn get_update_notice_info(
+		update_notice_url: Url,
+		data_file: DataFile,
+		client: reqwest::Client,
+		regexes: Arc<UpdateNoticeRegexes>,
+	) -> Result<UpdateNoticeInfo> {
+		let response_text = client.get(update_notice_url).send().await?.text().await?;
+		Ok(match data_file {
+			DataFile::Global => {
+				update_notice::global::parse_update_notice(
+					&response_text,
+					regexes.global.get().context("Regexes are not compiled")?,
+					client.clone(),
+				)
+				.await?
+			},
+			DataFile::Cn => update_notice::cn::parse_update_notice(
+				&response_text,
+				regexes.cn.get().context("Regexes are not compiled")?,
+			)?,
+			DataFile::Kr => update_notice::kr::parse_update_notice(
+				&response_text,
+				regexes.kr.get().context("Regexes are not compiled")?,
+			)?,
+			DataFile::Tw => update_notice::tw::parse_update_notice(
+				&response_text,
+				regexes.tw.get().context("Regexes are not compiled")?,
+			)?,
+		})
+	}
+
+	async fn get_update_notices_info(
+		&self,
+		data_file: DataFile,
+	) -> Result<Vec<(GameVersion, UpdateNoticeInfo)>> {
+		let versions = self.versions.get(data_file).await;
+
+		let mut join_set: tokio::task::JoinSet<Result<(GameVersion, UpdateNoticeInfo)>> =
+			tokio::task::JoinSet::new();
+		let mut abort_handle: Option<tokio::task::AbortHandle> = None;
+		for (version, update_notice_url) in versions
+			.iter()
+			.filter_map(|version| version.update_notice_url.as_ref().map(|url| (version, url)))
+		{
+			let update_notice_url = match data_file {
+				DataFile::Cn => {
+					let mut url = Url::parse("https://cqnews.web.sdo.com/api/news/newsDetail")?;
+					let id: &str = update_notice_url
+						.fragment()
+						.context("Url has no fragment")?
+						.split('/')
+						.next_back()
+						.context("Update notice url is missing ID")?;
+					url.set_query(Some(&format!("gameCode=ff&id={id}")));
+					url
+				},
+				_ => update_notice_url.clone(),
+			};
+			let client = self.client.clone();
+			let regexes = self.regexes.clone();
+			let game_version = version.game_version.clone();
+			if abort_handle.is_some_and(|abort_handle| !abort_handle.is_finished()) {
+				tokio::time::sleep(std::time::Duration::from_millis(250)).await; // TODO: come up with a better system for throttling requests
+			}
+			abort_handle = Some(join_set.spawn(async move {
+				Self::get_update_notice_info(update_notice_url, data_file, client, regexes)
+					.await
+					.map(|update_notice_info| (game_version, update_notice_info))
+			}));
+		}
+
+		let mut update_notices = Vec::with_capacity(versions.len());
+		while let Some(res) = join_set.join_next().await {
+			update_notices.push(res??); // TODO: find a better way of doing this
+		}
+
+		// TODO: test if result is sorted
+		Ok(update_notices)
+	}
+
+	pub async fn get(&self, data_file: DataFile) -> &[(GameVersion, UpdateNoticeInfo)] {
+		let update_notices = match data_file {
+			DataFile::Global => &self.global,
+			DataFile::Cn => &self.cn,
+			DataFile::Kr => &self.kr,
+			DataFile::Tw => &self.tw,
+		};
+		update_notices
+			.get_or_init(|| async {
+				self.get_update_notices_info(data_file)
+					.await
+					.expect("Failed to fetch update notice info")
+			})
+			.await
+	}
+
+	pub fn new(versions: Arc<Versions>) -> Result<Self> {
+		const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
+
+		let client = reqwest::Client::builder()
+			.user_agent(USER_AGENT)
+			.redirect(reqwest::redirect::Policy::none())
+			.build()?;
+
+		Ok(Self {
+			versions,
+			client,
+			regexes: Arc::new(UpdateNoticeRegexes::compile_all()?),
+			global: OnceCell::const_new(),
+			cn: OnceCell::const_new(),
+			kr: OnceCell::const_new(),
+			tw: OnceCell::const_new(),
+		})
+	}
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
 	env_logger::init();
 
-	let source_folder = Path::new(env!("CARGO_MANIFEST_DIR"))
-		.parent()
-		.context("Manifest directory has no parent")?
-		.join("data")
-		.join("csv");
-
-	let thaliak_versions = tokio::spawn(async move { get_thaliak_versions().await });
-	let thaliak_versions = Arc::new(RwLock::new(thaliak_versions.await??));
+	let versions = Arc::new(Versions::new());
+	let thaliak_versions = Arc::new(ThaliakVersions::new());
+	let update_notices = Arc::new(UpdateNotices::new(versions.clone())?);
 
 	let mut join_set: tokio::task::JoinSet<Result<()>> = tokio::task::JoinSet::new();
 
 	for data_file in DataFile::all_files() {
-		let source_folder = source_folder.clone();
+		let versions = versions.clone();
 		let thaliak_versions = thaliak_versions.clone();
+		let update_notices = update_notices.clone();
 		join_set.spawn(async move {
-			let file_path = source_folder.join(format!(
-				"{file_name}.csv",
-				file_name = data_file.file_prefix()
-			));
-			let file = tokio::fs::File::open(file_path).await?;
-
-			let versions = Arc::new(RwLock::new(read_csv_file(file).await?));
-
 			let mut join_set: tokio::task::JoinSet<Result<()>> = tokio::task::JoinSet::new();
 
-			join_set.spawn(check_versions_basic(versions.clone()));
-			join_set.spawn(check_version_thaliak(
+			join_set.spawn(check_versions_basic(versions.clone(), data_file));
+			join_set.spawn(check_versions_thaliak(
 				versions.clone(),
 				thaliak_versions.clone(),
 				data_file,
 			));
-			join_set.spawn(check_versions_update_notices(versions.clone(), data_file));
+			join_set.spawn(check_versions_update_notices(
+				versions.clone(),
+				update_notices.clone(),
+				data_file,
+			));
 
 			while let Some(res) = join_set.join_next().await {
 				res??;
@@ -66,8 +285,8 @@ async fn main() -> Result<()> {
 	Ok(())
 }
 
-async fn check_versions_basic(versions: Versions) -> Result<()> {
-	let versions: &[Version] = &versions.read().await;
+async fn check_versions_basic(versions: Arc<Versions>, data_file: DataFile) -> Result<()> {
+	let versions = versions.get(data_file).await;
 	ensure!(versions.len() > 0);
 
 	for version in versions {
@@ -85,18 +304,17 @@ async fn check_versions_basic(versions: Versions) -> Result<()> {
 	Ok(())
 }
 
-async fn check_version_thaliak(
-	versions: Versions,
-	thaliak_versions: ThaliakVersions,
+async fn check_versions_thaliak(
+	versions: Arc<Versions>,
+	thaliak_versions: Arc<ThaliakVersions>,
 	data_file: DataFile,
 ) -> Result<()> {
-	let versions: &[Version] = &versions.read().await;
-	let thaliak_versions = match data_file {
-		DataFile::Global => &thaliak_versions.read().await.global,
-		DataFile::Cn => &thaliak_versions.read().await.cn,
-		DataFile::Kr => &thaliak_versions.read().await.kr,
-		DataFile::Tw => return Ok(()), // TW is not yet supported by Thaliak (officially / for v1)
+	let versions = versions.get(data_file).await;
+	let thaliak_versions = thaliak_versions.get(data_file).await;
+	let Some(thaliak_versions) = thaliak_versions else {
+		return Ok(()); // TW is not yet supported by Thaliak
 	};
+
 	for version in versions {
 		let mut seen_version = false;
 		for thaliak_version in thaliak_versions

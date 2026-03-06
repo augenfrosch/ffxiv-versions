@@ -9,7 +9,7 @@ mod release_date_format;
 const VERSION_DATE_FORMAT: &str = "%Y.%m.%d";
 const RELEASE_DATE_FORMAT: &str = "%Y-%m-%d";
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct GameVersion {
 	pub date: NaiveDate,
 	pub part: u32,
@@ -101,7 +101,7 @@ impl<'de> Deserialize<'de> for GameVersion {
 	}
 }
 
-#[derive(Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Version {
 	pub game_version: GameVersion,
 	pub version_name: String,

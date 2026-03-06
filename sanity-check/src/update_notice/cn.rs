@@ -4,6 +4,7 @@ use regex::Regex;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
+#[derive(Debug)]
 pub struct Regexes {
 	game_version_re: Regex,
 }

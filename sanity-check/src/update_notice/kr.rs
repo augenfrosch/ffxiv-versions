@@ -5,6 +5,7 @@ use url::Url;
 
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
+#[derive(Debug)]
 pub struct Regexes {
 	patch_name_re: Regex,
 }
