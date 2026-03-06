@@ -2,9 +2,11 @@ use std::{fmt::Display, path::Path, sync::Arc};
 
 use anyhow::{Context, Result};
 use clap::{Parser, ValueEnum};
-use ffxiv_versions_util::rw::{read_csv_file, read_json_file, write_csv_file, write_json_file};
+use ffxiv_versions_util::{
+	DataFile,
+	rw::{read_csv_file, read_json_file, write_csv_file, write_json_file},
+};
 
-const FILES: [&str; 4] = ["global", "cn", "kr", "tw"];
 const FILE_FORMATS: [FileFormat; 2] = [FileFormat::Csv, FileFormat::Json];
 
 #[derive(Parser, Debug)]
@@ -40,7 +42,7 @@ async fn main() -> Result<()> {
 		.join("data");
 
 	let mut join_set: tokio::task::JoinSet<Result<()>> = tokio::task::JoinSet::new();
-	for file_name in FILES {
+	for file_name in DataFile::all_files().into_iter().map(DataFile::file_prefix) {
 		let data_folder = data_folder.clone();
 		join_set.spawn(async move {
 			let file_path = data_folder

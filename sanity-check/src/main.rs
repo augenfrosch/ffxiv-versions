@@ -2,7 +2,7 @@ use std::{path::Path, sync::Arc};
 
 use anyhow::{Context, Result, ensure};
 use ffxiv_versions_types::{GameVersion, Version};
-use ffxiv_versions_util::rw::read_csv_file;
+use ffxiv_versions_util::{DataFile, rw::read_csv_file};
 use tokio::sync::RwLock;
 
 mod thaliak;
@@ -12,8 +12,6 @@ mod update_notice;
 use update_notice::check_versions_update_notices;
 
 use crate::thaliak::BaseGameRepositoriesResponse;
-
-const FILES: [&str; 4] = ["global", "cn", "kr", "tw"];
 
 type Versions = Arc<RwLock<Vec<Version>>>;
 type ThaliakVersions = Arc<RwLock<BaseGameRepositoriesResponse>>;
@@ -33,11 +31,14 @@ async fn main() -> Result<()> {
 
 	let mut join_set: tokio::task::JoinSet<Result<()>> = tokio::task::JoinSet::new();
 
-	for file_name in FILES {
+	for data_file in DataFile::all_files() {
 		let source_folder = source_folder.clone();
 		let thaliak_versions = thaliak_versions.clone();
 		join_set.spawn(async move {
-			let file_path = source_folder.join(format!("{file_name}.csv"));
+			let file_path = source_folder.join(format!(
+				"{file_name}.csv",
+				file_name = data_file.file_prefix()
+			));
 			let file = tokio::fs::File::open(file_path).await?;
 
 			let versions = Arc::new(RwLock::new(read_csv_file(file).await?));
@@ -48,9 +49,9 @@ async fn main() -> Result<()> {
 			join_set.spawn(check_version_thaliak(
 				versions.clone(),
 				thaliak_versions.clone(),
-				file_name,
+				data_file,
 			));
-			join_set.spawn(check_versions_update_notices(versions.clone(), file_name));
+			join_set.spawn(check_versions_update_notices(versions.clone(), data_file));
 
 			while let Some(res) = join_set.join_next().await {
 				res??;
@@ -87,14 +88,14 @@ async fn check_versions_basic(versions: Versions) -> Result<()> {
 async fn check_version_thaliak(
 	versions: Versions,
 	thaliak_versions: ThaliakVersions,
-	file_name: &str,
+	data_file: DataFile,
 ) -> Result<()> {
 	let versions: &[Version] = &versions.read().await;
-	let thaliak_versions = match file_name {
-		"global" => &thaliak_versions.read().await.global,
-		"cn" => &thaliak_versions.read().await.cn,
-		"kr" => &thaliak_versions.read().await.kr,
-		_ => return Ok(()), // TW is not yet supported by Thaliak (officially / for v1)
+	let thaliak_versions = match data_file {
+		DataFile::Global => &thaliak_versions.read().await.global,
+		DataFile::Cn => &thaliak_versions.read().await.cn,
+		DataFile::Kr => &thaliak_versions.read().await.kr,
+		DataFile::Tw => return Ok(()), // TW is not yet supported by Thaliak (officially / for v1)
 	};
 	for version in versions {
 		let mut seen_version = false;
@@ -106,7 +107,7 @@ async fn check_version_thaliak(
 			{
 				// Global only; Thaliak was only offered patch with a delay. Release date is correct / the same as `first_seen`'s date
 				ensure!(
-					file_name == "global"
+					data_file == DataFile::Global
 						&& thaliak_version.version_string == "2025.06.10.0000.0000"
 				);
 			}

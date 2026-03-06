@@ -18,9 +18,7 @@ pub fn parse_update_notice(response_text: &str) -> Result<UpdateNoticeInfo> {
 	struct NewsDetail {
 		data: NewsDetailData,
 	}
-	fn deserialize_datetime<'de, D>(
-		deserializer: D,
-	) -> Result<DateTime<FixedOffset>, D::Error>
+	fn deserialize_datetime<'de, D>(deserializer: D) -> Result<DateTime<FixedOffset>, D::Error>
 	where
 		D: Deserializer<'de>,
 	{
