@@ -261,6 +261,12 @@ async fn main() -> Result<()> {
 				update_notices.clone(),
 				data_file,
 			));
+			join_set.spawn(check_versions_timing(
+				versions.clone(),
+				thaliak_versions.clone(),
+				update_notices.clone(),
+				data_file,
+			));
 
 			while let Some(res) = join_set.join_next().await {
 				res??;
@@ -344,6 +350,57 @@ async fn check_versions_thaliak(
 			"Game version {} not seen by Thaliak on {}",
 			version.game_version,
 			version.release_date
+		);
+	}
+
+	Ok(())
+}
+
+async fn check_versions_timing(
+	versions: Arc<Versions>,
+	thaliak_versions: Arc<ThaliakVersions>,
+	update_notices: Arc<UpdateNotices>,
+	data_file: DataFile,
+) -> Result<()> {
+	let thaliak_versions = thaliak_versions.get(data_file).await;
+	let Some(thaliak_versions) = thaliak_versions else {
+		return Ok(()); // See above
+	};
+	for (version, update_notice_info) in versions
+		.get(data_file)
+		.await
+		.iter()
+		.zip(update_notices.get(data_file).await)
+	{
+		let thaliak_version = thaliak_versions
+			.iter()
+			.find(|thaliak_version| {
+				thaliak_version.version_string == version.game_version.to_string()
+			})
+			.context("Thaliak's tracked versions is missing the game version")?;
+
+		let Some(update_notice_info) = update_notice_info else {
+			continue;
+		};
+		let time_delta = update_notice_info.datetime - *thaliak_version.first_seen;
+
+		// Allowed time delta in hours relative to update_notice_info.datetime; TODO: test if this is working as expected
+		let (allowed_margin_before, allowed_margin_after) =
+			match (data_file, version.game_version.to_string().as_str()) {
+				(DataFile::Cn, "2024.09.17.0000.0000") => (24, 0), // CN 7.0 (see other comments for more info)
+				(DataFile::Cn, "2025.10.23.0000.0000") => (0, 25), // CN 7.35 ^
+				(DataFile::Kr, "2024.11.19.0000.0000") => (27, 0), // KR 7.0
+				(DataFile::Kr, _) => (10, 0), // KR patch timing seemingly (at least at the start) increases by 1h every patch
+				_ => (4, 0),
+			};
+		ensure!(
+			time_delta.num_hours() <= allowed_margin_before
+				&& -time_delta.num_hours() <= allowed_margin_after,
+			"Thaliak's first seen DateTime for version {} is too far away from the update notice's DateTime ({:?} vs {:?}; delta = {})",
+			version.game_version,
+			update_notice_info.datetime,
+			*thaliak_version.first_seen,
+			time_delta.num_hours(),
 		);
 	}
 
