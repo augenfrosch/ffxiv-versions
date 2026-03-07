@@ -19,5 +19,6 @@ jobs:
       - name: Check index line endings
         run: git ls-files --eol | (! grep -E '^i/(crlf|mixed)')
       - name: Check for missing re-exports
-        run: cargo run --bin ffxiv-versions-re-export -- csv && git diff --exit-code
-        run: cargo run --bin ffxiv-versions-re-export -- json && git diff --exit-code
+        run: |
+          cargo run --bin ffxiv-versions-re-export -- csv && git diff --exit-code
+          cargo run --bin ffxiv-versions-re-export -- json && git diff --exit-code
