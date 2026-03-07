@@ -353,6 +353,18 @@ async fn check_versions_thaliak(
 		);
 	}
 
+	let latest_version = versions.last().context("Versions slice is empty")?;
+	ensure!(
+		!thaliak_versions.iter().any(|thaliak_version| {
+			thaliak_version
+				.version_string
+				.parse::<GameVersion>()
+				.is_ok_and(|game_version| game_version > latest_version.game_version)
+		}),
+		"Version {} is not the latest seen by Thaliak",
+		latest_version.game_version
+	);
+
 	Ok(())
 }
 
@@ -362,16 +374,12 @@ async fn check_versions_timing(
 	update_notices: Arc<UpdateNotices>,
 	data_file: DataFile,
 ) -> Result<()> {
+	let versions = versions.get(data_file).await;
 	let thaliak_versions = thaliak_versions.get(data_file).await;
 	let Some(thaliak_versions) = thaliak_versions else {
 		return Ok(()); // See above
 	};
-	for (version, update_notice_info) in versions
-		.get(data_file)
-		.await
-		.iter()
-		.zip(update_notices.get(data_file).await)
-	{
+	for (version, update_notice_info) in versions.iter().zip(update_notices.get(data_file).await) {
 		let thaliak_version = thaliak_versions
 			.iter()
 			.find(|thaliak_version| {
