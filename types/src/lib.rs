@@ -10,11 +10,17 @@ const VERSION_DATE_FORMAT: &str = "%Y.%m.%d";
 const RELEASE_DATE_FORMAT: &str = "%Y-%m-%d";
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
+pub enum PatchType {
+	Delta,
+	History { section: String },
+}
+
+#[derive(Debug, Clone, PartialEq, PartialOrd)]
 pub struct GameVersion {
 	pub date: NaiveDate,
 	pub part: u32,
 	pub revision: u32,
-	// HIST patches are currently not accounted for
+	pub patch_type: PatchType,
 }
 
 impl Display for GameVersion {
@@ -23,11 +29,20 @@ impl Display for GameVersion {
 			date,
 			part,
 			revision,
+			patch_type,
 		} = self;
 		write!(
 			f,
-			"{date}.{part:04}.{revision:04}",
-			date = date.format(VERSION_DATE_FORMAT)
+			"{prefix}{date}.{part:04}.{revision:04}{suffix}",
+			prefix = match patch_type {
+				PatchType::Delta => "",
+				PatchType::History { .. } => "H",
+			},
+			date = date.format(VERSION_DATE_FORMAT),
+			suffix = match patch_type {
+				PatchType::Delta => "",
+				PatchType::History { section } => &section,
+			},
 		)
 	}
 }
@@ -68,6 +83,19 @@ impl FromStr for GameVersion {
 	type Err = ParseGameVersionError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
+		let (s, patch_type) = if s.starts_with('H') {
+			let (_, section) = s
+				.rsplit_once(|c: char| c.is_numeric())
+				.ok_or(ParseGameVersionError::MissingParts)?;
+			(
+				&s[1..s.len() - section.len()],
+				PatchType::History {
+					section: section.to_owned(),
+				},
+			)
+		} else {
+			(s, PatchType::Delta)
+		};
 		let (date_str, part_str, revision_str) = s
 			.rsplit_once('.')
 			.map(|(l, revision_str)| {
@@ -86,6 +114,7 @@ impl FromStr for GameVersion {
 			revision: revision_str
 				.parse()
 				.map_err(|_| ParseGameVersionError::PartParsing)?,
+			patch_type,
 		})
 	}
 }

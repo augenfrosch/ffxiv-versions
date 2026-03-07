@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use ffxiv_versions_types::GameVersion;
 use graphql_client::{GraphQLQuery, Response};
 use serde::{Deserialize, Serialize};
 
@@ -47,7 +48,7 @@ struct AllBaseGameRepositoriesQuery;
 
 #[derive(Debug)]
 pub struct BaseGameRepositoriesResponseVersion {
-	pub version_string: String,
+	pub game_version: GameVersion,
 	pub first_seen: DateTime,
 	pub first_offered: DateTime,
 }
@@ -73,7 +74,7 @@ impl TryFrom<all_base_game_repositories_query::RepositoryVersionsVersions>
 			(Some(first_seen), Some(first_offered)) => (first_seen, first_offered),
 		};
 		Ok(Self {
-			version_string,
+			game_version: version_string.parse()?,
 			first_seen,
 			first_offered,
 		})

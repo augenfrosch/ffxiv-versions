@@ -1,7 +1,7 @@
 use std::{path::Path, sync::Arc};
 
 use anyhow::{Context, Result, ensure};
-use ffxiv_versions_types::{GameVersion, Version};
+use ffxiv_versions_types::Version;
 use ffxiv_versions_util::{DataFile, rw::read_csv_file};
 use tokio::sync::OnceCell;
 use url::Url;
@@ -322,27 +322,22 @@ async fn check_versions_thaliak(
 				// Global only; Thaliak was only offered patch with a delay. Release date is correct / the same as `first_seen`'s date
 				ensure!(
 					data_file == DataFile::Global
-						&& thaliak_version.version_string == "2025.06.10.0000.0000"
+						&& thaliak_version.game_version.to_string() == "2025.06.10.0000.0000"
 				);
 			}
-			if let Ok(thaliak_game_version) = thaliak_version.version_string.parse::<GameVersion>()
-			{
-				let same_version = thaliak_game_version == version.game_version;
 
-				if same_version {
-					seen_version = true;
-				} else {
-					ensure!(
-						thaliak_game_version < version.game_version,
-						"Game version seen by Thaliak on {} is greater: {} > {}",
-						version.release_date,
-						thaliak_game_version,
-						version.game_version
-					);
-				}
+			let same_version = thaliak_version.game_version == version.game_version;
+
+			if same_version {
+				seen_version = true;
 			} else {
-				// This is a workaround for HIST patch names not being parsed. MAYBE implement this for future stuff
-				ensure!(thaliak_version.version_string.starts_with('H'));
+				ensure!(
+					thaliak_version.game_version < version.game_version,
+					"Game version seen by Thaliak on {} is greater: {} > {}",
+					version.release_date,
+					thaliak_version.game_version,
+					version.game_version
+				);
 			}
 		}
 		ensure!(
@@ -355,12 +350,9 @@ async fn check_versions_thaliak(
 
 	let latest_version = versions.last().context("Versions slice is empty")?;
 	ensure!(
-		!thaliak_versions.iter().any(|thaliak_version| {
-			thaliak_version
-				.version_string
-				.parse::<GameVersion>()
-				.is_ok_and(|game_version| game_version > latest_version.game_version)
-		}),
+		!thaliak_versions
+			.iter()
+			.any(|thaliak_version| { thaliak_version.game_version > latest_version.game_version }),
 		"Version {} is not the latest seen by Thaliak",
 		latest_version.game_version
 	);
@@ -382,9 +374,7 @@ async fn check_versions_timing(
 	for (version, update_notice_info) in versions.iter().zip(update_notices.get(data_file).await) {
 		let thaliak_version = thaliak_versions
 			.iter()
-			.find(|thaliak_version| {
-				thaliak_version.version_string == version.game_version.to_string()
-			})
+			.find(|thaliak_version| thaliak_version.game_version == version.game_version)
 			.context("Thaliak's tracked versions is missing the game version")?;
 
 		let Some(update_notice_info) = update_notice_info else {
@@ -392,13 +382,13 @@ async fn check_versions_timing(
 		};
 		let time_delta = update_notice_info.datetime - *thaliak_version.first_seen;
 
-		// Allowed time delta in hours relative to update_notice_info.datetime; TODO: test if this is working as expected
+		// Allowed time delta in hours relative to `update_notice_info.datetime`
 		let (allowed_margin_before, allowed_margin_after) =
 			match (data_file, version.game_version.to_string().as_str()) {
 				(DataFile::Cn, "2024.09.17.0000.0000") => (24, 0), // CN 7.0 (see other comments for more info)
 				(DataFile::Cn, "2025.10.23.0000.0000") => (0, 25), // CN 7.35 ^
 				(DataFile::Kr, "2024.11.19.0000.0000") => (27, 0), // KR 7.0
-				(DataFile::Kr, _) => (10, 0), // KR patch timing seemingly (at least at the start) increases by 1h every patch
+				(DataFile::Kr, _) => (10, 0), // KR patch to maintenance completion delay (at least at the start for DT) is slightly longer
 				_ => (4, 0),
 			};
 		ensure!(

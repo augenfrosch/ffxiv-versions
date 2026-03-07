@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use chrono::NaiveDate;
-use ffxiv_versions_types::{GameVersion, Version};
+use ffxiv_versions_types::{GameVersion, PatchType, Version};
 use serde::Serialize;
 use url::Url;
 
@@ -22,6 +22,7 @@ fn test_version() -> Result<Version> {
 			date: NaiveDate::from_ymd_opt(2026, 1, 30).context("Invalid date")?,
 			part: 0,
 			revision: 0,
+			patch_type: PatchType::Delta,
 		},
 		version_name: "7.41x1".to_owned(),
 		release_date: NaiveDate::from_ymd_opt(2026, 2, 5).context("Invalid date")?,
@@ -30,6 +31,28 @@ fn test_version() -> Result<Version> {
 			"https://na.finalfantasyxiv.com/lodestone/news/detail/e1cabf2fe5698223626bd53e6b6057a7612cf8fe",
 		)?),
 	})
+}
+
+#[test]
+fn test_game_version() -> Result<()> {
+	let delta = test_version()?.game_version;
+	let history = GameVersion {
+		date: NaiveDate::from_ymd_opt(2012, 1, 1).expect("Invalid date"),
+		part: 0,
+		revision: 0,
+		patch_type: PatchType::History {
+			section: "az".to_owned(),
+		},
+	};
+
+	assert_eq!(delta.to_string(), "2026.01.30.0000.0000");
+	assert_eq!(delta, "2026.01.30.0000.0000".parse()?);
+
+	assert_eq!(history.to_string(), "H2012.01.01.0000.0000az");
+	assert_eq!(history, "H2012.01.01.0000.0000az".parse()?);
+	assert!(history < "H2012.01.01.0000.0000b".parse()?);
+
+	Ok(())
 }
 
 #[test]
