@@ -1,0 +1,35 @@
+name: Rust
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["*"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Update Rust
+        run: rustup update stable
+      - name: Check compilation
+        run: cargo check --verbose --workspace --all-targets
+      - name: Check formatting
+        run: cargo fmt --verbose --check
+      - name: Check for Clippy warnings
+        run: cargo clippy --verbose --workspace --all-targets -- --deny warnings
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Update Rust
+        run: rustup update stable
+      - name: Build & run tests
+        run: cargo test --verbose --workspace
