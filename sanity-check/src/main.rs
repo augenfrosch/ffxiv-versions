@@ -406,3 +406,8 @@ async fn check_versions_timing(
 
 	Ok(())
 }
+
+#[test]
+fn test_sanity_checks() -> Result<()> {
+	main()
+}
