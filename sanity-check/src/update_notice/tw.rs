@@ -1,4 +1,4 @@
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Error, Result, ensure};
 use chrono::{Datelike, FixedOffset, NaiveDate, NaiveDateTime, NaiveTime};
 use regex::Regex;
 use scraper::{Html, Selector};
@@ -16,9 +16,9 @@ impl Regexes {
 	pub fn compile_all() -> Result<Self> {
 		Ok(Self {
 			maintenance_time_re: Regex::new(
-				r"(?<month>\d{1,2})/(?<day>\d{1,2}) (?<start_time>\d{1,2}:\d{2}) ~ (?<end_time>\d{1,2}:\d{2})",
+				r"(?<month>\d{1,2})/(?<day>\d{1,2}) (?<start_time>\d{1,2}:\d{2}) [~～] (?<end_time>\d{1,2}:\d{2})",
 			)?,
-			patch_name_re: Regex::new(r"patch_(?<patch>\d.\d+)_notes.html")?,
+			patch_name_re: Regex::new(r"(?<patch>\d.\d+)( )?版本")?,
 		})
 	}
 }
@@ -36,7 +36,7 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 	let mut selection = html.select(&selector);
 	let mut datetime_text = selection.next().context("Selection is empty")?.text();
 	ensure!(selection.next() == None);
-	let mut naive_datetime = NaiveDateTime::parse_from_str(
+	let naive_datetime = NaiveDateTime::parse_from_str(
 		datetime_text.next().context("Missing datetime text")?,
 		DATETIME_FORMAT,
 	)
@@ -44,58 +44,62 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 	ensure!(datetime_text.next() == None);
 	let selector = Selector::parse(".content > .article .notice")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
-	let mut selection = html.select(&selector);
-	while let Some(captures) = selection
+	let maintenance_end_time = html
+		.select(&selector)
 		.next()
 		.and_then(|element_ref| element_ref.text().next())
 		.and_then(|notice_text| regexes.maintenance_time_re.captures(notice_text))
-	{
-		let day = captures["day"].parse()?;
-		let month = captures["month"].parse()?;
-		let year = if month >= naive_datetime.month() {
-			naive_datetime.year()
-		} else {
-			naive_datetime.year() + 1
-		};
-		let end_time = NaiveTime::parse_from_str(&captures["end_time"], "%H:%M")?;
-
-		naive_datetime = NaiveDateTime::new(
-			NaiveDate::from_ymd_opt(year, month, day).context("Invalid date")?,
-			end_time,
-		);
-	}
-	let date_time = naive_datetime
+		.map(|captures| {
+			let day = captures["day"].parse()?;
+			let month = captures["month"].parse()?;
+			let year = if month >= naive_datetime.month() {
+				naive_datetime.year()
+			} else {
+				naive_datetime.year() + 1
+			};
+			Ok::<NaiveDateTime, Error>(NaiveDateTime::new(
+				NaiveDate::from_ymd_opt(year, month, day).context("Invalid date")?,
+				NaiveTime::parse_from_str(&captures["end_time"], "%H:%M")?,
+			))
+		})
+		.transpose()?
+		.context("Missing maintenance end time")?;
+	let date_time = maintenance_end_time
 		.and_local_timezone(OFFSET)
 		.latest()
 		.context("Could not convert datetime using time zone")?;
 
+	let selector = Selector::parse(".content > .article b")
+		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
+	let mut selection = html.select(&selector);
+	let patch_name = selection
+		.next_back()
+		.and_then(|bold_element| bold_element.text().next())
+		.and_then(|text| regexes.patch_name_re.captures(text))
+		.map(|captures| captures["patch"].to_owned());
+
 	let selector = Selector::parse(".content > .article a")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
 	let mut selection = html.select(&selector);
-	let link_element_ref = selection.next();
+	let patch_note_url = selection
+		.next()
+		.and_then(|element_ref| element_ref.attr("href"))
+		.map(Url::parse)
+		.transpose()?;
 	ensure!(selection.next() == None);
 
-	if let Some(link_element_ref) = link_element_ref {
-		let href_attr = link_element_ref
-			.attr("href")
-			.context("Patch note link is missing href attribute")?;
-		let patch_note_url = Url::parse(href_attr)?;
-		// The patch name is also seen in the text but the pages layout is currently quite volatile
-		let patch_name = regexes
-			.patch_name_re
-			.captures(href_attr)
-			.context("Missing patch name in URL")?["patch"]
-			.to_owned();
-
+	if let Some(patch_name) = patch_name {
 		Ok(UpdateNoticeInfo {
 			datetime: date_time.to_utc(),
-			update_notice_type: UpdateNoticeType::NamedPatchKrTw {
+			update_notice_type: UpdateNoticeType::NamedPatchTw {
 				patch_note_url,
 				patch_name,
 			},
 		})
 	} else {
-		// There is currently no example for a hotfix update notice for TW
-		bail!("Failed to parse update notice")
+		Ok(UpdateNoticeInfo {
+			datetime: date_time.to_utc(),
+			update_notice_type: UpdateNoticeType::Hotfix,
+		})
 	}
 }

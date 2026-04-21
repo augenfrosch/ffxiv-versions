@@ -78,7 +78,7 @@ pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<Upd
 
 		Ok(UpdateNoticeInfo {
 			datetime: date_time.to_utc(),
-			update_notice_type: UpdateNoticeType::NamedPatchKrTw {
+			update_notice_type: UpdateNoticeType::NamedPatchKr {
 				patch_note_url,
 				patch_name,
 			},

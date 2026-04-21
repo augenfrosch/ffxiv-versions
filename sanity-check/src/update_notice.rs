@@ -23,8 +23,12 @@ pub enum UpdateNoticeType {
 		patch_name: String,
 		game_version: GameVersion,
 	},
-	NamedPatchKrTw {
+	NamedPatchKr {
 		patch_note_url: Url,
+		patch_name: String,
+	},
+	NamedPatchTw {
+		patch_note_url: Option<Url>,
 		patch_name: String,
 	},
 }
@@ -33,22 +37,26 @@ impl UpdateNoticeType {
 	pub fn patch_note_url(&self) -> Option<&Url> {
 		match self {
 			Self::NamedPatchGlobal { patch_note_url }
-			| Self::NamedPatchKrTw { patch_note_url, .. } => Some(patch_note_url),
+			| Self::NamedPatchKr { patch_note_url, .. } => Some(patch_note_url),
+			Self::NamedPatchTw { patch_note_url, .. } => patch_note_url.as_ref(),
 			Self::Hotfix | Self::NamedPatchCn { .. } => None,
 		}
 	}
 	pub fn patch_name(&self) -> Option<&str> {
 		match self {
-			Self::NamedPatchCn { patch_name, .. } | Self::NamedPatchKrTw { patch_name, .. } => {
-				Some(patch_name)
-			},
+			Self::NamedPatchCn { patch_name, .. }
+			| Self::NamedPatchKr { patch_name, .. }
+			| Self::NamedPatchTw { patch_name, .. } => Some(patch_name),
 			Self::Hotfix | Self::NamedPatchGlobal { .. } => None,
 		}
 	}
 	pub fn game_version(&self) -> Option<&GameVersion> {
 		match self {
 			Self::NamedPatchCn { game_version, .. } => Some(game_version),
-			Self::Hotfix | Self::NamedPatchGlobal { .. } | Self::NamedPatchKrTw { .. } => None,
+			Self::Hotfix
+			| Self::NamedPatchGlobal { .. }
+			| Self::NamedPatchKr { .. }
+			| Self::NamedPatchTw { .. } => None,
 		}
 	}
 }
