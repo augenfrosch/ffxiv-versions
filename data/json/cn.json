@@ -131,5 +131,12 @@
 		"release_date": "2026-04-28",
 		"patch_note_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/387670",
 		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/387851"
+	},
+	{
+		"game_version": "2026.05.01.0000.0000",
+		"version_name": "7.5x1",
+		"release_date": "2026-05-07",
+		"patch_note_url": null,
+		"update_notice_url": "https://ff.web.sdo.com/web8/index.html#/newstab/newscont/388117"
 	}
 ]
