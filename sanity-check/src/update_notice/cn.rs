@@ -14,7 +14,7 @@ impl Regexes {
 	pub fn compile_all() -> Result<Self> {
 		Ok(Self {
 			game_version_re: Regex::new(
-				r"Ver.(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）",
+				r"-更新客户端版本至(Ver.)?(?<game_version>\d{4}.\d{2}.\d{2}.\d{4}.\d{4})（(?<patch>\d.\d+)(\+\d.\d+)?版本）",
 			)?,
 		})
 	}

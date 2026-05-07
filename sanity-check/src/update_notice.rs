@@ -119,7 +119,7 @@ pub async fn check_versions_update_notices(
 		if update_notice_info.update_notice_type == UpdateNoticeType::Hotfix {
 			ensure!(
 				version.patch_note_url.is_none(),
-				"Hotfixes should not have patch notes: {}",
+				"Hotfixes should not have patch notes: {data_file:?}, {}",
 				version.game_version
 			);
 		}
