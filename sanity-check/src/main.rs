@@ -317,19 +317,22 @@ async fn check_versions_thaliak(
 			.iter()
 			.filter(|th_ver| version.release_date == th_ver.first_seen.date_naive())
 		{
-			if thaliak_version.first_seen.date_naive() != thaliak_version.first_offered.date_naive()
-			{
-				// Global only; Thaliak was only offered patch with a delay. Release date is correct / the same as `first_seen`'s date
-				ensure!(
-					data_file == DataFile::Global
-						&& thaliak_version.game_version.to_string() == "2025.06.10.0000.0000"
-				);
-			}
-
 			let same_version = thaliak_version.game_version == version.game_version;
 
 			if same_version {
 				seen_version = true;
+
+				if thaliak_version.first_seen.date_naive()
+					!= thaliak_version.first_offered.date_naive()
+				{
+					// Global only; Thaliak was only offered patch with a delay. Release date is correct / the same as `first_seen`'s date
+					ensure!(
+						data_file == DataFile::Global
+							&& (thaliak_version.game_version.to_string() == "2025.06.10.0000.0000"
+								|| thaliak_version.game_version.to_string()
+									== "2026.04.21.0000.0000")
+					);
+				}
 			} else {
 				ensure!(
 					thaliak_version.game_version < version.game_version,
