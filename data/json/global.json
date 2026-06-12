@@ -264,5 +264,12 @@
 		"release_date": "2026-06-02",
 		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/c46881a31a2c90d0965493c921b434eca09113f8",
 		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/4816861815e3d63f5d2af2578f853e1d5b79d09a"
+	},
+	{
+		"game_version": "2026.06.10.0000.0000",
+		"version_name": "7.51x1",
+		"release_date": "2026-06-12",
+		"patch_note_url": null,
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/ea90dfdc148606a29d7eaa44d829e65b96ff7b1d"
 	}
 ]
