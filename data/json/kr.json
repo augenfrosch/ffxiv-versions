@@ -159,5 +159,12 @@
 		"release_date": "2026-08-07",
 		"patch_note_url": null,
 		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2934"
+	},
+	{
+		"game_version": "2026.09.01.0000.0000",
+		"version_name": "7.56",
+		"release_date": "2026-09-08",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2947",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2949"
 	}
 ]
