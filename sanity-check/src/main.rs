@@ -330,7 +330,9 @@ async fn check_versions_thaliak(
 						data_file == DataFile::Global
 							&& (thaliak_version.game_version.to_string() == "2025.06.10.0000.0000"
 								|| thaliak_version.game_version.to_string()
-									== "2026.04.21.0000.0000")
+									== "2026.04.21.0000.0000"
+								|| thaliak_version.game_version.to_string()
+									== "2026.09.01.0000.0000")
 					);
 				}
 			} else {
