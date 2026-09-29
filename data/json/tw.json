@@ -54,5 +54,12 @@
 		"release_date": "2026-07-28",
 		"patch_note_url": "https://www.ffxiv.com.tw/web/special/patchnote_log/patch_7.2_notes.html",
 		"update_notice_url": "https://www.ffxiv.com.tw/web/news/news_content.aspx?id=mPPBQZMZvm"
+	},
+	{
+		"game_version": "2026.09.14.0000.0000",
+		"version_name": "7.25",
+		"release_date": "2026-09-29",
+		"patch_note_url": "https://www.ffxiv.com.tw/web/special/patchnote_log/patch_7.25_notes.html",
+		"update_notice_url": "https://www.ffxiv.com.tw/web/news/news_content.aspx?id=mWNzX8RAV4"
 	}
 ]
