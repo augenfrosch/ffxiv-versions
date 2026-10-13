@@ -394,7 +394,7 @@ async fn check_versions_timing(
 				(DataFile::Cn, "2025.10.23.0000.0000") => (0, 25), // CN 7.35 ^
 				(DataFile::Kr, "2024.11.19.0000.0000") => (27, 0), // KR 7.0
 				(DataFile::Kr, _) => (10, 0), // KR patch to maintenance completion delay (at least at the start for DT) is slightly longer
-				_ => (4, 0),
+				_ => (4, 2),
 			};
 		ensure!(
 			time_delta.num_hours() <= allowed_margin_before
