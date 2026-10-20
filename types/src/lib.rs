@@ -9,10 +9,37 @@ mod release_date_format;
 const VERSION_DATE_FORMAT: &str = "%Y.%m.%d";
 const RELEASE_DATE_FORMAT: &str = "%Y-%m-%d";
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PatchType {
-	Delta,
 	History { section: String },
+	Delta,
+}
+
+impl PartialOrd for PatchType {
+	fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+		Some(self.cmp(other))
+	}
+}
+
+impl Ord for PatchType {
+	fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+		match self {
+			PatchType::History { section } => match other {
+				PatchType::History {
+					section: other_section,
+				} => match section.len().cmp(&other_section.len()) {
+					std::cmp::Ordering::Less => std::cmp::Ordering::Less,
+					std::cmp::Ordering::Equal => section.cmp(other_section),
+					std::cmp::Ordering::Greater => std::cmp::Ordering::Greater,
+				},
+				PatchType::Delta => std::cmp::Ordering::Less,
+			},
+			PatchType::Delta => match other {
+				PatchType::History { .. } => std::cmp::Ordering::Greater,
+				PatchType::Delta => std::cmp::Ordering::Equal,
+			},
+		}
+	}
 }
 
 #[derive(Debug, Clone, PartialEq, PartialOrd)]
@@ -58,7 +85,7 @@ impl Serialize for GameVersion {
 }
 
 #[non_exhaustive]
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum ParseGameVersionError {
 	MissingParts,
 	PartParsing,

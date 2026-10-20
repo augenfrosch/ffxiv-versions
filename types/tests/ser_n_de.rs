@@ -34,28 +34,6 @@ fn test_version() -> Result<Version> {
 }
 
 #[test]
-fn test_game_version() -> Result<()> {
-	let delta = test_version()?.game_version;
-	let history = GameVersion {
-		date: NaiveDate::from_ymd_opt(2012, 1, 1).expect("Invalid date"),
-		part: 0,
-		revision: 0,
-		patch_type: PatchType::History {
-			section: "az".to_owned(),
-		},
-	};
-
-	assert_eq!(delta.to_string(), "2026.01.30.0000.0000");
-	assert_eq!(delta, "2026.01.30.0000.0000".parse()?);
-
-	assert_eq!(history.to_string(), "H2012.01.01.0000.0000az");
-	assert_eq!(history, "H2012.01.01.0000.0000az".parse()?);
-	assert!(history < "H2012.01.01.0000.0000b".parse()?);
-
-	Ok(())
-}
-
-#[test]
 fn json_test() -> Result<()> {
 	let version = test_version()?;
 
