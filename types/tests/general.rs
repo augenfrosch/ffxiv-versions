@@ -3,7 +3,7 @@ use chrono::NaiveDate;
 use ffxiv_versions_types::{GameVersion, PatchType};
 
 #[test]
-fn parse_and_stringify_versions() -> Result<()> {
+fn parse_and_stringify_versions() {
 	let versions = [
 		(
 			"2024.07.03.0000.0001",
@@ -31,8 +31,6 @@ fn parse_and_stringify_versions() -> Result<()> {
 		assert_eq!(version_str.parse().as_ref(), Ok(&version));
 		assert_eq!(version_str, version.to_string());
 	}
-
-	Ok(())
 }
 
 #[test]

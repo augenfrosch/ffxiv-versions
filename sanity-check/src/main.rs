@@ -208,9 +208,9 @@ impl UpdateNotices {
 			.get_or_init(|| async {
 				self.get_update_notices_info(data_file)
 					.await
-					.expect(&format!(
-						"Failed to fetch update notice info ({data_file:?})"
-					))
+					.unwrap_or_else(|_| {
+						panic!("Failed to fetch update notice info ({data_file:?})")
+					})
 				// TODO: Make finding the source of breakages not a complete pain.
 				// Something like `tracing` would probably make sense.
 			})
