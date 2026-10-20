@@ -1,5 +1,5 @@
-use anyhow::{Context, Result, bail, ensure};
-use chrono::{FixedOffset, NaiveDateTime, NaiveTime, Utc};
+use anyhow::{Context, Result, ensure};
+use chrono::{FixedOffset, NaiveDateTime};
 use regex::Regex;
 use scraper::{Html, Selector};
 use url::Url;
@@ -7,8 +7,7 @@ use url::Url;
 use super::{UpdateNoticeInfo, UpdateNoticeType};
 
 const OFFSET: FixedOffset = FixedOffset::east_opt(9 * (60 * 60)).expect("Offset seconds OOB");
-const DATETIME_FORMAT: &str = "%y-%m-%d %H:%M";
-const TIME_FORMAT: &str = "%H:%M";
+const DATETIME_FORMAT: &str = "%Y-%m-%dT%H:%M";
 
 #[derive(Debug)]
 pub struct Regexes {
@@ -26,38 +25,27 @@ impl Regexes {
 pub fn parse_update_notice(response_text: &str, regexes: &Regexes) -> Result<UpdateNoticeInfo> {
 	let html = Html::parse_document(response_text);
 
-	let selector = Selector::parse(".ff14_board_view > .board_sub_title > .board_info > .date")
+	let selector = Selector::parse(".view_summary time")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
 	let mut selection = html.select(&selector);
-	let mut date_element_text = selection.next().context("Selection is empty")?.text();
+	let datetime_text = selection
+		.next()
+		.context("Selection is empty")?
+		.attr("datetime")
+		.context("`time` element missing `datetime` attribute")?;
 	ensure!(selection.next() == None);
-	let date_text = date_element_text.next().context("Missing datetime text")?;
-	ensure!(date_element_text.next() == None);
-	let date_time = match date_text.len() {
-		// Workaround for the DateTime shown not including the date if it is still the same (local) day
-		5 => {
-			let naive_time = NaiveTime::parse_from_str(date_text, TIME_FORMAT)
-				.context("Failed to parse time")?;
 
-			Utc::now()
-				.with_timezone(&OFFSET)
-				.with_time(naive_time)
-				.latest()
-				.context("Could not convert datetime using time")?
-		},
-		14 => {
-			let naive_datetime = NaiveDateTime::parse_from_str(date_text, DATETIME_FORMAT)
-				.context("Failed to parse DateTime")?;
+	let date_time = {
+		let naive_datetime = NaiveDateTime::parse_from_str(datetime_text, DATETIME_FORMAT)
+			.context("Failed to parse DateTime")?;
 
-			naive_datetime
-				.and_local_timezone(OFFSET)
-				.latest()
-				.context("Could not convert datetime using time zone")?
-		},
-		_ => bail!("Unknown DateTime format: {date_text:?}"),
+		naive_datetime
+			.and_local_timezone(OFFSET)
+			.latest()
+			.context("Could not convert datetime using time zone")?
 	};
 
-	let selector = Selector::parse(".ff14_board_view > .board_view_box a")
+	let selector = Selector::parse(".view_contents a")
 		.map_err(|err| anyhow::anyhow!("Failed to parse_selector ({err})"))?;
 	let mut selection = html.select(&selector);
 	let link_element_ref = selection.next();
