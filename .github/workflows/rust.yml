@@ -18,11 +18,11 @@ jobs:
       - name: Update Rust
         run: rustup update stable
       - name: Check compilation
-        run: cargo check --verbose --workspace --all-targets
+        run: cargo check --workspace --all-targets
       - name: Check formatting
-        run: cargo fmt --verbose --check
+        run: cargo fmt --check
       - name: Check for Clippy warnings
-        run: cargo clippy --verbose --workspace --all-targets -- --deny warnings
+        run: cargo clippy --workspace --all-targets -- --deny warnings
 
   test:
     name: Test
@@ -32,4 +32,4 @@ jobs:
       - name: Update Rust
         run: rustup update stable
       - name: Build & run tests
-        run: cargo test --verbose --workspace
+        run: cargo test --workspace
