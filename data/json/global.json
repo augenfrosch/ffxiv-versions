@@ -327,5 +327,12 @@
 		"release_date": "2026-10-20",
 		"patch_note_url": null,
 		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/303bb0ba6de283bd88772bd93b3db36a74053a4d"
+	},
+	{
+		"game_version": "2026.11.03.0000.0000",
+		"version_name": "7.58",
+		"release_date": "2026-11-10",
+		"patch_note_url": "https://na.finalfantasyxiv.com/lodestone/topics/detail/27a249e737d7b041332c7018949035b03d62c081",
+		"update_notice_url": "https://na.finalfantasyxiv.com/lodestone/news/detail/18ea9b5e8dba3105d89aa629aa6d09684e001706"
 	}
 ]

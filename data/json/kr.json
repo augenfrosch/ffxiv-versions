@@ -180,5 +180,12 @@
 		"release_date": "2026-10-13",
 		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/2967",
 		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/2970"
+	},
+	{
+		"game_version": "2026.11.03.0000.0000",
+		"version_name": "7.58",
+		"release_date": "2026-11-10",
+		"patch_note_url": "https://www.ff14.co.kr/news/notice/view/3160",
+		"update_notice_url": "https://www.ff14.co.kr/news/notice/view/3162"
 	}
 ]
